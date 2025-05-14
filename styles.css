@@ -1,0 +1,33 @@
+body {
+    font-family: 'Arial', sans-serif; /* Use a common, readable font */
+    line-height: 1.6;
+    margin: 0; /* Remove default body margin */
+    background-color: #f4f4f4; /* Light grey background */
+    color: #333; /* Dark grey text color */
+    display: flex; /* Use flexbox to help with centering */
+    justify-content: center; /* Center content horizontally */
+    align-items: flex-start; /* Align items to the top */
+    min-height: 100vh; /* Ensure body takes at least full viewport height */
+    padding: 20px; /* Add some padding around the content */
+    box-sizing: border-box; /* Include padding in element's total width and height */
+}
+
+.container {
+    background-color: #fff; /* White background for the content area */
+    padding: 30px; /* Add padding inside the container */
+    border-radius: 8px; /* Slightly rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    max-width: 700px; /* Limit the maximum width of the content */
+    width: 100%; /* Allow the container to be responsive */
+    text-align: center; /* Center text within the container */
+}
+
+h1 {
+    color: #0056b3; /* A nice blue for the heading */
+    margin-top: 0; /* Remove top margin for the heading */
+    margin-bottom: 20px; /* Add space below the heading */
+}
+
+p {
+    margin-bottom: 0; /* Remove bottom margin for the last paragraph */
+}
