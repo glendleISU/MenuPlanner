@@ -6,37 +6,62 @@
     <title>MenuPlanner</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif; /* Use a common, readable font */
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
-            margin: 0; /* Remove default body margin */
-            background-color: #f4f4f4; /* Light grey background */
-            color: #333; /* Dark grey text color */
-            display: flex; /* Use flexbox to help with centering */
-            justify-content: center; /* Center content horizontally */
-            align-items: flex-start; /* Align items to the top */
-            min-height: 100vh; /* Ensure body takes at least full viewport height */
-            padding: 20px; /* Add some padding around the content */
-            box-sizing: border-box; /* Include padding in element's total width and height */
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .container {
-            background-color: #fff; /* White background for the content area */
-            padding: 30px; /* Add padding inside the container */
-            border-radius: 8px; /* Slightly rounded corners */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-            max-width: 700px; /* Limit the maximum width of the content */
-            width: 100%; /* Allow the container to be responsive */
-            text-align: center; /* Center text within the container */
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
         }
 
         h1 {
-            color: #0056b3; /* A nice blue for the heading */
-            margin-top: 0; /* Remove top margin for the heading */
-            margin-bottom: 20px; /* Add space below the heading */
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 20px;
         }
 
         p {
-            margin-bottom: 0; /* Remove bottom margin for the last paragraph */
+            margin-bottom: 30px; /* Added some space below the paragraph */
+        }
+
+        /* --- New CSS for buttons --- */
+        .button-container {
+            display: flex; /* Use flexbox to align items horizontally */
+            justify-content: space-around; /* Distribute space evenly around items */
+            gap: 15px; /* Add space between buttons */
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+
+        .button-container button {
+            flex-grow: 1; /* Allow buttons to grow and fill available space */
+            padding: 12px 20px; /* Padding inside buttons */
+            font-size: 1rem; /* Standard font size */
+            color: #fff; /* White text color */
+            background-color: #007bff; /* Blue background */
+            border: none; /* Remove default border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Indicate it's clickable */
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+            min-width: 150px; /* Minimum width for buttons */
+        }
+
+        .button-container button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
         }
     </style>
 </head>
@@ -51,6 +76,12 @@
             your schedule. Add your favorite recipes, set your preferences, and
             generate a fresh meal plan each week.
         </p>
+
+        <div class="button-container">
+            <button>Plan a Menu</button>
+            <button>View Recipes</button>
+            <button>Settings</button>
+        </div>
     </div>
 
 </body>
