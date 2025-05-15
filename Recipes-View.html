@@ -190,8 +190,8 @@
                 recipeItemDiv.classList.add('recipe-list-item');
                 // Store the Firestore document ID on the element for later use (e.g., viewing details)
                 recipeItemDiv.dataset.id = recipe.id;
-                // Display the recipe name - Assuming the field is named 'recipeName'
-                recipeItemDiv.textContent = recipe.data().recipeName || 'Unnamed Recipe'; // Use a default if name is missing
+                // Display the recipe name
+                recipeItemDiv.textContent = recipe.data().Name || 'Unnamed Recipe'; // Use a default if name is missing
 
                 recipeListContainer.appendChild(recipeItemDiv);
             });
@@ -247,8 +247,8 @@
             const recipeItems = recipeListContainer.querySelectorAll('.recipe-list-item'); // Get current items
 
             recipeItems.forEach(item => {
-                const recipeName = item.textContent.toLowerCase();
-                if (recipeName.includes(searchTerm)) {
+                const Name = item.textContent.toLowerCase();
+                if (Name.includes(searchTerm)) {
                     item.style.display = 'block';
                 } else {
                     item.style.display = 'none';
