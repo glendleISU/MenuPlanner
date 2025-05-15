@@ -224,7 +224,7 @@
         <a href="index.html" class="back-link">Back to Home</a>
     </div>
 
-    <script>
+<script>
         // --- JavaScript for interactivity ---
 
         // Get references to key elements
@@ -232,17 +232,24 @@
         const dayOptionsContainer = document.querySelector('.day-options-container');
         const dayOptions = dayOptionsContainer.querySelectorAll('.day-option'); // Get all day options
 
-        // Function to show/hide meal options based on day checkbox state
+        // Function to show/hide meal options and manage their checked state
         function toggleMealOptions(dayCheckbox) {
             const mealOptionsId = dayCheckbox.getAttribute('data-meal-options');
             const mealOptionsDiv = document.getElementById(mealOptionsId);
+            const mealCheckboxes = mealOptionsDiv.querySelectorAll('input[type="checkbox"]'); // Get meal checkboxes
 
             if (dayCheckbox.checked) {
-                mealOptionsDiv.style.display = 'block';
+                mealOptionsDiv.style.display = 'block'; // Show the meal options
+
+                // --- New logic: Check meal options when the day is checked ---
+                mealCheckboxes.forEach(mealCheckbox => {
+                    mealCheckbox.checked = true;
+                });
+
             } else {
-                mealOptionsDiv.style.display = 'none';
-                // Optional: Uncheck meal options when the day is unchecked
-                const mealCheckboxes = mealOptionsDiv.querySelectorAll('input[type="checkbox"]');
+                mealOptionsDiv.style.display = 'none'; // Hide meal options
+
+                // Uncheck meal options when the day is unchecked
                 mealCheckboxes.forEach(mealCheckbox => {
                     mealCheckbox.checked = false;
                 });
@@ -251,20 +258,21 @@
 
         // Function to update which day options are visible based on number of days input
         function updateVisibleDays() {
-            const numDays = parseInt(numDaysInput.value, 10); // Get the number of days and convert to integer
+            const numDays = parseInt(numDaysInput.value, 10);
 
             dayOptions.forEach((dayOption, index) => {
                 if (index < numDays) {
                     dayOption.style.display = 'block'; // Show the day option
-                    // Ensure meal options are shown if the day is checked
+                    // When showing a day due to the number input, its meals should follow the day's checkbox state
                     const dayCheckbox = dayOption.querySelector('.day-checkbox');
-                    toggleMealOptions(dayCheckbox); // Call toggleMealOptions to handle initial checked state
+                    // We don't force meals to be checked here, we just ensure their display matches the day checkbox
+                    toggleMealOptions(dayCheckbox);
                 } else {
                     dayOption.style.display = 'none'; // Hide the day option
                     // Also uncheck the day and hide its meal options if it's hidden
                     const dayCheckbox = dayOption.querySelector('.day-checkbox');
                     dayCheckbox.checked = false;
-                    toggleMealOptions(dayCheckbox); // Hide meal options
+                    toggleMealOptions(dayCheckbox);
                 }
             });
         }
@@ -275,7 +283,7 @@
         dayOptions.forEach(dayOption => {
             const dayCheckbox = dayOption.querySelector('.day-checkbox');
             dayCheckbox.addEventListener('change', function() {
-                toggleMealOptions(this);
+                toggleMealOptions(this); // 'this' refers to the checkbox that was changed
             });
         });
 
@@ -285,13 +293,12 @@
         // --- Initial Setup ---
 
         // Run the updateVisibleDays function on page load to set the initial state
+        // based on the default number of days and checked state of day checkboxes.
         updateVisibleDays();
 
-        // Also ensure meal options are initially shown for checked days on load
-        dayOptions.forEach(dayOption => {
-             const dayCheckbox = dayOption.querySelector('.day-checkbox');
-             toggleMealOptions(dayCheckbox);
-        });
+        // We don't need a separate loop here anymore, as updateVisibleDays calls
+        // toggleMealOptions for each initially visible day, which now handles
+        // the initial checking of meal options.
 
     </script>
 
