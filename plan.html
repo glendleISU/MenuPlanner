@@ -145,7 +145,7 @@
         <form action="GeneratedMenu.html" method="get" id="menu-plan-form">
 
             <div class="form-group">
-                <label for="date-range">Select date range (max 7 days):</label>
+                <label for="date-range">Select date range:</label>
                 <input type="text" id="date-range" name="date_range">
             </div>
 
@@ -219,7 +219,7 @@
             const endDate = endMoment.toDate(); // Convert Moment.js object to Date object
 
             const timeDiff = endDate.getTime() - startDate.getTime();
-            const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+            const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
 
             // Generate day options for the selected range
