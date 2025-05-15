@@ -26,14 +26,14 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             max-width: 700px;
             width: 100%;
-            text-align: left; /* Align text to the left for forms */
+            text-align: left;
         }
 
         h1 {
             color: #0056b3;
             margin-top: 0;
             margin-bottom: 20px;
-            text-align: center; /* Center the heading */
+            text-align: center;
         }
 
         .form-group {
@@ -41,46 +41,51 @@
         }
 
         .form-group label {
-            display: block; /* Label on its own line */
+            display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
 
         .form-group input[type="number"],
         .form-group select {
-            width: calc(100% - 22px); /* Adjust width for padding and border */
+            width: calc(100% - 22px);
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 1rem;
         }
 
+        /* --- Updated CSS for vertical radio buttons --- */
         .radio-group label {
-             display: inline-block; /* Allow radio buttons and labels to be inline */
-             margin-right: 15px; /* Space between radio options */
-             font-weight: normal; /* Labels for radios don't need to be bold */
+             display: block; /* Make each label take its own line */
+             margin-bottom: 8px; /* Space between radio options */
+             font-weight: normal;
+        }
+
+         .radio-group label:last-child {
+             margin-bottom: 0; /* Remove bottom margin for the last radio option */
         }
 
         .radio-group input[type="radio"] {
-            margin-right: 5px; /* Space between radio button and its label */
+            margin-right: 5px;
         }
 
         button[type="submit"] {
-            display: block; /* Make the button take the full width */
+            display: block;
             width: 100%;
             padding: 12px 20px;
             font-size: 1rem;
             color: #fff;
-            background-color: #28a745; /* Green background for submit */
+            background-color: #28a745;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            margin-top: 20px; /* Space above the button */
+            margin-top: 20px;
         }
 
         button[type="submit"]:hover {
-            background-color: #218838; /* Darker green on hover */
+            background-color: #218838;
         }
 
         .back-link {
@@ -101,30 +106,14 @@
     <div class="container">
         <h1>Plan Your Menu</h1>
 
-        <form action="#" method="post"> <div class="form-group">
+        <form action="#" method="post">
+
+            <div class="form-group">
                 <label for="num-days">Number of days for the menu:</label>
                 <input type="number" id="num-days" name="num_days" min="1" max="7" value="7">
             </div>
 
             <div class="form-group">
-                <label>Start day of the week:</label>
+                <label>Current Date: Wednesday, May 14, 2025</label>
                 <div class="radio-group">
-                    <label><input type="radio" name="start_day" value="Wednesday" checked> Wednesday</label>
-                    <label><input type="radio" name="start_day" value="Thursday"> Thursday</label>
-                    <label><input type="radio" name="start_day" value="Friday"> Friday</label>
-                    <label><input type="radio" name="start_day" value="Saturday"> Saturday</label>
-                    <label><input type="radio" name="start_day" value="Sunday"> Sunday</label>
-                    <label><input type="radio" name="start_day" value="Monday"> Monday</label>
-                    <label><input type="radio" name="start_day" value="Tuesday"> Tuesday</label>
-                </div>
-            </div>
-
-            <button type="submit">Generate Menu</button>
-
-        </form>
-
-        <a href="index.html" class="back-link">Back to Home</a>
-    </div>
-
-</body>
-</html>
+                    <label><input type="radio" name="start_day" value="Wednesday"
