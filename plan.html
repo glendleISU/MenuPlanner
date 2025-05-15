@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plan Your Menu</title>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -37,7 +46,7 @@
         }
 
         .form-group {
-            margin-bottom: 15px; /* Reduced spacing for form groups */
+            margin-bottom: 15px;
         }
 
         .form-group label {
@@ -46,20 +55,24 @@
             font-weight: bold;
         }
 
-        .form-group input[type="number"] {
-            width: calc(100% - 22px);
+        /* Style for the Date Range Picker input */
+        #date-range {
+            width: calc(100% - 22px); /* Adjust width */
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 1rem;
+            cursor: pointer; /* Indicate it's clickable */
+            background-color: #fff; /* Ensure white background */
         }
+
 
         /* --- CSS for checkboxes and spacing --- */
         .day-option {
-            margin-bottom: 10px; /* Reduced space between day options */
-            border-bottom: 1px solid #eee; /* Separator line */
-            padding-bottom: 10px; /* Reduced padding */
-            /* Removed display: none; here as JS will handle initial visibility */
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            display: block; /* Ensure dynamically added elements are block by default */
         }
 
         .day-option:last-child {
@@ -70,21 +83,20 @@
 
         .day-option > label {
             font-weight: normal;
-            margin-bottom: 5px; /* Reduced space below the day label */
+            margin-bottom: 5px;
             display: inline-block;
         }
 
         .meal-options {
-            margin-top: 8px; /* Reduced space above meal options */
+            margin-top: 8px;
             margin-left: 25px;
             padding-left: 10px;
             border-left: 2px solid #007bff;
-            /* Removed style="display: none;" here as JS will handle initial visibility */
         }
 
         .meal-options label {
             display: block;
-            margin-bottom: 5px; /* Reduced space between meal options */
+            margin-bottom: 5px;
             font-weight: normal;
         }
 
@@ -122,6 +134,7 @@
          .back-link:hover {
             text-decoration: underline;
         }
+
     </style>
 </head>
 <body>
@@ -132,92 +145,14 @@
         <form action="#" method="post" id="menu-plan-form">
 
             <div class="form-group">
-                <label for="num-days">Number of days for the menu:</label>
-                <input type="number" id="num-days" name="num_days" min="1" max="7" value="7">
+                <label for="date-range">Select date range (max 7 days):</label>
+                <input type="text" id="date-range" name="date_range">
             </div>
 
             <div class="form-group">
-                 <label>Select days and meals:</label>
-                 <p style="font-size: 0.9em; color: #555; margin-top: 5px;">(Current Date: Wednesday, May 14, 2025)</p>
-                <div class="day-options-container">
-                    <div class="day-option">
-                        <label>
-                            <input type="checkbox" name="days[]" value="Wednesday" class="day-checkbox" data-meal-options="wednesday-meals" checked> Wednesday
-                        </label>
-                        <div id="wednesday-meals" class="meal-options">
-                            <label><input type="checkbox" name="meals[Wednesday][]" value="Breakfast" checked> Breakfast</label>
-                            <label><input type="checkbox" name="meals[Wednesday][]" value="Lunch" checked> Lunch</label>
-                            <label><input type="checkbox" name="meals[Wednesday][]" value="Supper" checked> Supper</label>
-                        </div>
+                 <label>Selected days and meals:</label>
+                 <div class="day-options-container">
                     </div>
-
-                    <div class="day-option">
-                        <label>
-                            <input type="checkbox" name="days[]" value="Thursday" class="day-checkbox" data-meal-options="thursday-meals" checked> Thursday
-                        </label>
-                        <div id="thursday-meals" class="meal-options">
-                            <label><input type="checkbox" name="meals[Thursday][]" value="Breakfast" checked> Breakfast</label>
-                            <label><input type="checkbox" name="meals[Thursday][]" value="Lunch" checked> Lunch</label>
-                            <label><input type="checkbox" name="meals[Thursday][]" value="Supper" checked> Supper</label>
-                        </div>
-                    </div>
-
-                    <div class="day-option">
-                         <label>
-                             <input type="checkbox" name="days[]" value="Friday" class="day-checkbox" data-meal-options="friday-meals" checked> Friday
-                         </label>
-                         <div id="friday-meals" class="meal-options">
-                             <label><input type="checkbox" name="meals[Friday][]" value="Breakfast" checked> Breakfast</label>
-                             <label><input type="checkbox" name="meals[Friday][]" value="Lunch" checked> Lunch</label>
-                             <label><input type="checkbox" name="meals[Friday][]" value="Supper" checked> Supper</label>
-                         </div>
-                     </div>
-
-                     <div class="day-option">
-                          <label>
-                              <input type="checkbox" name="days[]" value="Saturday" class="day-checkbox" data-meal-options="saturday-meals" checked> Saturday
-                          </label>
-                          <div id="saturday-meals" class="meal-options">
-                              <label><input type="checkbox" name="meals[Saturday][]" value="Breakfast" checked> Breakfast</label>
-                              <label><input type="checkbox" name="meals[Saturday][]" value="Lunch" checked> Lunch</label>
-                              <label><input type="checkbox" name="meals[Saturday][]" value="Supper" checked> Supper</label>
-                          </div>
-                      </div>
-
-                      <div class="day-option">
-                           <label>
-                               <input type="checkbox" name="days[]" value="Sunday" class="day-checkbox" data-meal-options="sunday-meals" checked> Sunday
-                           </label>
-                           <div id="sunday-meals" class="meal-options">
-                               <label><input type="checkbox" name="meals[Sunday][]" value="Breakfast" checked> Breakfast</label>
-                               <label><input type="checkbox" name="meals[Sunday][]" value="Lunch" checked> Lunch</label>
-                               <label><input type="checkbox" name="meals[Sunday][]" value="Supper" checked> Supper</label>
-                           </div>
-                       </div>
-
-                       <div class="day-option">
-                            <label>
-                                <input type="checkbox" name="days[]" value="Monday" class="day-checkbox" data-meal-options="monday-meals" checked> Monday
-                            </label>
-                            <div id="monday-meals" class="meal-options">
-                                <label><input type="checkbox" name="meals[Monday][]" value="Breakfast" checked> Breakfast</label>
-                                <label><input type="checkbox" name="meals[Monday][]" value="Lunch" checked> Lunch</label>
-                                <label><input type="checkbox" name="meals[Monday][]" value="Supper" checked> Supper</label>
-                            </div>
-                        </div>
-
-                        <div class="day-option">
-                             <label>
-                                 <input type="checkbox" name="days[]" value="Tuesday" class="day-checkbox" data-meal-options="tuesday-meals" checked> Tuesday
-                             </label>
-                             <div id="tuesday-meals" class="meal-options">
-                                 <label><input type="checkbox" name="meals[Tuesday][]" value="Breakfast" checked> Breakfast</label>
-                                 <label><input type="checkbox" name="meals[Tuesday][]" value="Lunch" checked> Lunch</label>
-                                 <label><input type="checkbox" name="meals[Tuesday][]" value="Supper" checked> Supper</label>
-                             </div>
-                         </div>
-
-                </div>
             </div>
 
             <button type="submit">Generate Menu</button>
@@ -228,12 +163,26 @@
     </div>
 
     <script>
-        // --- JavaScript for interactivity ---
+        // --- JavaScript for interactivity and dynamic content ---
 
         // Get references to key elements
-        const numDaysInput = document.getElementById('num-days');
+        const dateRangeInput = document.getElementById('date-range');
         const dayOptionsContainer = document.querySelector('.day-options-container');
-        const dayOptions = dayOptionsContainer.querySelectorAll('.day-option'); // Get all day options
+
+        // Helper function to format a date as "YYYY-MM-DD"
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+         // Helper function to get the day name from a Date object
+         function getDayName(date) {
+             const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+             return days[date.getDay()];
+         }
+
 
         // Function to show/hide meal options and manage their checked state
         function toggleMealOptions(dayCheckbox) {
@@ -244,7 +193,7 @@
             const mealCheckboxes = mealOptionsDiv.querySelectorAll('input[type="checkbox"]');
 
             if (dayCheckbox.checked) {
-                mealOptionsDiv.style.display = 'block'; // Show the meal options
+                mealOptionsDiv.style.display = 'block';
 
                 // Check meal options when the day is checked
                 mealCheckboxes.forEach(mealCheckbox => {
@@ -252,7 +201,7 @@
                 });
 
             } else {
-                mealOptionsDiv.style.display = 'none'; // Hide meal options
+                mealOptionsDiv.style.display = 'none';
 
                 // Uncheck meal options when the day is unchecked
                 mealCheckboxes.forEach(mealCheckbox => {
@@ -261,53 +210,87 @@
             }
         }
 
-        // Function to update which day options are visible based on number of days input
-        function updateVisibleDays() {
-            const numDays = parseInt(numDaysInput.value, 10); // Get the number of days and convert to integer
+        // Function to generate and display day options based on the date range
+        function generateAndDisplayDayOptions(startMoment, endMoment) {
+            // Clear previous day options
+            dayOptionsContainer.innerHTML = '';
 
-            dayOptions.forEach((dayOption, index) => {
-                if (index < numDays) {
-                    dayOption.style.display = 'block'; // Show the day option
-                    // Ensure meal options are shown/hidden based on the day's checkbox state
-                    const dayCheckbox = dayOption.querySelector('.day-checkbox');
-                    toggleMealOptions(dayCheckbox);
-                } else {
-                    dayOption.style.display = 'none'; // Hide the day option
-                    // Also uncheck the day and hide its meal options if it's hidden
-                    const dayCheckbox = dayOption.querySelector('.day-checkbox');
-                    dayCheckbox.checked = false;
-                    toggleMealOptions(dayCheckbox);
-                }
-            });
+            const startDate = startMoment.toDate(); // Convert Moment.js object to Date object
+            const endDate = endMoment.toDate(); // Convert Moment.js object to Date object
+
+            const timeDiff = endDate.getTime() - startDate.getTime();
+            const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+
+
+            // Generate day options for the selected range
+            let currentDate = new Date(startDate);
+            for (let i = 0; i < diffDays; i++) {
+                const dayName = getDayName(currentDate);
+                const dateString = formatDate(currentDate); // e.g., "2025-05-14"
+                const dayId = `${dateString}`; // Use the date string as part of the ID
+
+                // Create the HTML for a single day option
+                const dayOptionDiv = document.createElement('div');
+                dayOptionDiv.classList.add('day-option');
+                dayOptionDiv.setAttribute('data-date', dateString); // Store the date on the element
+
+                // Use the date string in checkbox values and names for uniqueness
+                dayOptionDiv.innerHTML = `
+                    <label for="${dayId}">
+                        <input type="checkbox" id="${dayId}" name="days[]" value="${dateString}" class="day-checkbox" data-meal-options="${dayId}-meals" checked>
+                        ${dayName}, ${dateString}
+                    </label>
+                    <div id="${dayId}-meals" class="meal-options">
+                        <label for="${dayId}-breakfast"><input type="checkbox" id="${dayId}-breakfast" name="meals[${dateString}][]" value="Breakfast" checked> Breakfast</label>
+                        <label for="${dayId}-lunch"><input type="checkbox" id="${dayId}-lunch" name="meals[${dateString}][]" value="Lunch" checked> Lunch</label>
+                        <label for="${dayId}-supper"><input type="checkbox" id="${dayId}-supper" name="meals[${dateString}][]" value="Supper" checked> Supper</label>
+                    </div>
+                `;
+
+                // Append the new day option to the container
+                dayOptionsContainer.appendChild(dayOptionDiv);
+
+                // Add event listener to the new day checkbox and toggle meals
+                const newDayCheckbox = dayOptionDiv.querySelector('.day-checkbox');
+                newDayCheckbox.addEventListener('change', function() {
+                    toggleMealOptions(this);
+                });
+                 // Call toggleMealOptions initially because the checkbox is checked by default
+                 toggleMealOptions(newDayCheckbox);
+
+                // Move to the next day
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
         }
 
-        // --- Event Listeners ---
 
-        // Add event listener to each day checkbox to toggle meal options
-        dayOptions.forEach(dayOption => {
-            const dayCheckbox = dayOption.querySelector('.day-checkbox');
-            dayCheckbox.addEventListener('change', function() {
-                toggleMealOptions(this); // 'this' refers to the checkbox that was changed
+        // --- Initialize Date Range Picker ---
+        $(function() { // Use jQuery's document ready
+            $('#date-range').daterangepicker({
+                 opens: 'left',
+                 startDate: moment(), // Default to today
+                 endDate: moment().add(6, 'days'), // Default to 7 days including today
+                 maxSpan: { // Limit the range to 7 days
+                    "days": 7
+                 },
+                 // You can add more options here if needed, like 'locale' for language/format
+            }, function(start, end, label) {
+                 // This callback function runs when a date range is applied
+
+                 // Log the selected dates (for debugging)
+                 console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+
+                 // Generate and display the day options for the selected range
+                 generateAndDisplayDayOptions(start, end);
             });
+
+            // --- Initial Setup ---
+            // Trigger the callback function once on page load
+            // to populate the day options with the default range
+             const picker = $('#date-range').data('daterangepicker');
+             generateAndDisplayDayOptions(picker.startDate, picker.endDate);
+
         });
-
-        // Add event listener to the number of days input
-        numDaysInput.addEventListener('input', updateVisibleDays);
-
-        // --- Initial Setup ---
-
-        // Run the updateVisibleDays function on page load to set the initial state
-        updateVisibleDays();
-
-        // Also ensure meal options are initially shown for checked days on load
-        // This loop is needed because updateVisibleDays only sets display,
-        // but toggleMealOptions also sets the checked state of meal options.
-         dayOptions.forEach(dayOption => {
-              const dayCheckbox = dayOption.querySelector('.day-checkbox');
-              if(dayCheckbox.checked) { // Only toggle if initially checked
-                 toggleMealOptions(dayCheckbox);
-              }
-         });
 
 
     </script>
