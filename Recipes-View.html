@@ -294,10 +294,10 @@
                  detailsHtml += `<p><strong>Cook Time:</strong> ${recipeData['Cook Time'] || 'N/A'}</p>`; // Use bracket notation
 
                  // Display Tags if they exist and are an array
-                 if (recipeData.Tag(s) && Array.isArray(recipeData.Tag(s)) && recipeData.Tag(s).length > 0) {
-                     detailsHtml += `<p><strong>Tag(s):</strong> ${recipeData.Tag(s).join(', ')}</p>`;
-                 } else if (recipeData.Tag(s)) { // Handle if Tags is a string or other non-array
-                     detailsHtml += `<p><strong>Tag(s):</strong> ${recipeData.Tag(s)}</p>`;
+                 if (recipeData.['Tag(s)'] && Array.isArray(recipeData.['Tag(s)']) && recipeData.['Tag(s)'].length > 0) {
+                     detailsHtml += `<p><strong>['Tag(s)']:</strong> ${recipeData.['Tag(s)'].join(', ')}</p>`;
+                 } else if (recipeData.['Tag(s)']) { // Handle if Tags is a string or other non-array
+                     detailsHtml += `<p><strong>['Tag(s)']:</strong> ${recipeData.['Tag(s)']}</p>`;
                  }
 
 
