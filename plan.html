@@ -37,7 +37,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Reduced spacing for form groups */
         }
 
         .form-group label {
@@ -54,11 +54,11 @@
             font-size: 1rem;
         }
 
-        /* --- Updated CSS for checkboxes and sub-options --- */
+        /* --- Updated CSS for checkboxes and spacing --- */
         .day-option {
-            margin-bottom: 15px; /* Space between day options */
+            margin-bottom: 10px; /* Reduced space between day options */
             border-bottom: 1px solid #eee; /* Separator line */
-            padding-bottom: 15px;
+            padding-bottom: 10px; /* Reduced padding */
         }
 
         .day-option:last-child {
@@ -67,23 +67,22 @@
              padding-bottom: 0;
         }
 
-
-        .day-option > label { /* Style for the main day label */
-            font-weight: normal; /* Day label doesn't need to be bold */
-            margin-bottom: 10px; /* Space below the day label */
-            display: inline-block; /* Allow label and checkbox on same line */
+        .day-option > label {
+            font-weight: normal;
+            margin-bottom: 5px; /* Reduced space below the day label */
+            display: inline-block;
         }
 
         .meal-options {
-            margin-top: 10px; /* Space above meal options */
-            margin-left: 25px; /* Indent meal options */
-            padding-left: 10px; /* Add some padding for visual separation */
-            border-left: 2px solid #007bff; /* A visual indicator for sub-options */
+            margin-top: 8px; /* Reduced space above meal options */
+            margin-left: 25px;
+            padding-left: 10px;
+            border-left: 2px solid #007bff;
         }
 
         .meal-options label {
-            display: block; /* Each meal option on its own line */
-            margin-bottom: 5px; /* Space between meal options */
+            display: block;
+            margin-bottom: 5px; /* Reduced space between meal options */
             font-weight: normal;
         }
 
@@ -128,127 +127,42 @@
     <div class="container">
         <h1>Plan Your Menu</h1>
 
-        <form action="#" method="post" id="menu-plan-form"> <div class="form-group">
+        <form action="#" method="post" id="menu-plan-form">
+
+            <div class="form-group">
                 <label for="num-days">Number of days for the menu:</label>
                 <input type="number" id="num-days" name="num_days" min="1" max="7" value="7">
             </div>
 
             <div class="form-group">
                  <label>Select days and meals:</label>
-                 <p style="font-size: 0.9em; color: #555; margin-top: 5px;">(Current Date: Wednesday, May 14, 2025)</p> <div class="day-options-container">
+                 <p style="font-size: 0.9em; color: #555; margin-top: 5px;">(Current Date: Wednesday, May 14, 2025)</p>
+                <div class="day-options-container">
                     <div class="day-option">
                         <label>
-                            <input type="checkbox" name="days[]" value="Wednesday" class="day-checkbox" data-meal-options="wednesday-meals"> Wednesday
+                            <input type="checkbox" name="days[]" value="Wednesday" class="day-checkbox" data-meal-options="wednesday-meals" checked> Wednesday
                         </label>
-                        <div id="wednesday-meals" class="meal-options" style="display: none;"> <label><input type="checkbox" name="meals[Wednesday][]" value="Breakfast"> Breakfast</label>
-                            <label><input type="checkbox" name="meals[Wednesday][]" value="Lunch"> Lunch</label>
-                            <label><input type="checkbox" name="meals[Wednesday][]" value="Supper"> Supper</label>
+                        <div id="wednesday-meals" class="meal-options"> <label><input type="checkbox" name="meals[Wednesday][]" value="Breakfast" checked> Breakfast</label>
+                            <label><input type="checkbox" name="meals[Wednesday][]" value="Lunch" checked> Lunch</label>
+                            <label><input type="checkbox" name="meals[Wednesday][]" value="Supper" checked> Supper</label>
                         </div>
                     </div>
 
                     <div class="day-option">
                         <label>
-                            <input type="checkbox" name="days[]" value="Thursday" class="day-checkbox" data-meal-options="thursday-meals"> Thursday
+                            <input type="checkbox" name="days[]" value="Thursday" class="day-checkbox" data-meal-options="thursday-meals" checked> Thursday
                         </label>
-                        <div id="thursday-meals" class="meal-options" style="display: none;">
-                            <label><input type="checkbox" name="meals[Thursday][]" value="Breakfast"> Breakfast</label>
-                            <label><input type="checkbox" name="meals[Thursday][]" value="Lunch"> Lunch</label>
-                            <label><input type="checkbox" name="meals[Thursday][]" value="Supper"> Supper</label>
+                        <div id="thursday-meals" class="meal-options">
+                            <label><input type="checkbox" name="meals[Thursday][]" value="Breakfast" checked> Breakfast</label>
+                            <label><input type="checkbox" name="meals[Thursday][]" value="Lunch" checked> Lunch</label>
+                            <label><input type="checkbox" name="meals[Thursday][]" value="Supper" checked> Supper</label>
                         </div>
                     </div>
 
                     <div class="day-option">
                          <label>
-                             <input type="checkbox" name="days[]" value="Friday" class="day-checkbox" data-meal-options="friday-meals"> Friday
+                             <input type="checkbox" name="days[]" value="Friday" class="day-checkbox" data-meal-options="friday-meals" checked> Friday
                          </label>
-                         <div id="friday-meals" class="meal-options" style="display: none;">
-                             <label><input type="checkbox" name="meals[Friday][]" value="Breakfast"> Breakfast</label>
-                             <label><input type="checkbox" name="meals[Friday][]" value="Lunch"> Lunch</label>
-                             <label><input type="checkbox" name="meals[Friday][]" value="Supper"> Supper</label>
-                         </div>
-                     </div>
-
-                     <div class="day-option">
-                          <label>
-                              <input type="checkbox" name="days[]" value="Saturday" class="day-checkbox" data-meal-options="saturday-meals"> Saturday
-                          </label>
-                          <div id="saturday-meals" class="meal-options" style="display: none;">
-                              <label><input type="checkbox" name="meals[Saturday][]" value="Breakfast"> Breakfast</label>
-                              <label><input type="checkbox" name="meals[Saturday][]" value="Lunch"> Lunch</label>
-                              <label><input type="checkbox" name="meals[Saturday][]" value="Supper"> Supper</label>
-                          </div>
-                      </div>
-
-                      <div class="day-option">
-                           <label>
-                               <input type="checkbox" name="days[]" value="Sunday" class="day-checkbox" data-meal-options="sunday-meals"> Sunday
-                           </label>
-                           <div id="sunday-meals" class="meal-options" style="display: none;">
-                               <label><input type="checkbox" name="meals[Sunday][]" value="Breakfast"> Breakfast</label>
-                               <label><input type="checkbox" name="meals[Sunday][]" value="Lunch"> Lunch</label>
-                               <label><input type="checkbox" name="meals[Sunday][]" value="Supper"> Supper</label>
-                           </div>
-                       </div>
-
-                       <div class="day-option">
-                            <label>
-                                <input type="checkbox" name="days[]" value="Monday" class="day-checkbox" data-meal-options="monday-meals"> Monday
-                            </label>
-                            <div id="monday-meals" class="meal-options" style="display: none;">
-                                <label><input type="checkbox" name="meals[Monday][]" value="Breakfast"> Breakfast</label>
-                                <label><input type="checkbox" name="meals[Monday][]" value="Lunch"> Lunch</label>
-                                <label><input type="checkbox" name="meals[Monday][]" value="Supper"> Supper</label>
-                            </div>
-                        </div>
-
-                        <div class="day-option">
-                             <label>
-                                 <input type="checkbox" name="days[]" value="Tuesday" class="day-checkbox" data-meal-options="tuesday-meals"> Tuesday
-                             </label>
-                             <div id="tuesday-meals" class="meal-options" style="display: none;">
-                                 <label><input type="checkbox" name="meals[Tuesday][]" value="Breakfast"> Breakfast</label>
-                                 <label><input type="checkbox" name="meals[Tuesday][]" value="Lunch"> Lunch</label>
-                                 <label><input type="checkbox" name="meals[Tuesday][]" value="Supper"> Supper</label>
-                             </div>
-                         </div>
-
-                </div>
-            </div>
-
-            <button type="submit">Generate Menu</button>
-
-        </form>
-
-        <a href="index.html" class="back-link">Back to Home</a>
-    </div>
-
-    <script>
-        // --- JavaScript to show/hide meal options ---
-
-        // Get all the checkboxes for the days
-        const dayCheckboxes = document.querySelectorAll('.day-checkbox');
-
-        // Add an event listener to each day checkbox
-        dayCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                // Get the ID of the meal options div associated with this checkbox
-                const mealOptionsId = this.getAttribute('data-meal-options');
-                const mealOptionsDiv = document.getElementById(mealOptionsId);
-
-                // If the checkbox is checked, show the meal options, otherwise hide them
-                if (this.checked) {
-                    mealOptionsDiv.style.display = 'block'; // Or 'flex', 'grid', depending on future styling
-                } else {
-                    mealOptionsDiv.style.display = 'none';
-                    // Optional: Uncheck meal options when the day is unchecked
-                    const mealCheckboxes = mealOptionsDiv.querySelectorAll('input[type="checkbox"]');
-                    mealCheckboxes.forEach(mealCheckbox => {
-                        mealCheckbox.checked = false;
-                    });
-                }
-            });
-        });
-    </script>
-
-</body>
-</html>
+                         <div id="friday-meals" class="meal-options">
+                             <label><input type="checkbox" name="meals[Friday][]" value="Breakfast" checked> Breakfast</label>
+                             <label><input
