@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Recipes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: left; /* Align most content to the left */
+        }
+
+        h1 {
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center; /* Center the heading */
+        }
+
+        .form-group {
+            margin-bottom: 20px; /* Space below form groups */
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* Style for the search bar input */
+        #search-recipes {
+            width: calc(100% - 22px); /* Adjust width for padding and border */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* --- Scrollable List Area --- */
+        #recipe-list-container {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 300px; /* Set a max height to enable scrolling */
+            overflow-y: auto; /* Add vertical scrollbar when content exceeds max-height */
+            padding: 10px;
+            margin-bottom: 20px; /* Space below the list */
+            background-color: #fff; /* White background for the list */
+        }
+
+        /* Style for individual items in the list (example) */
+        .recipe-list-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer; /* Indicate items are selectable */
+            transition: background-color 0.2s ease;
+        }
+
+        .recipe-list-item:last-child {
+            border-bottom: none; /* No border on the last item */
+        }
+
+        .recipe-list-item:hover {
+            background-color: #f0f0f0; /* Highlight on hover */
+        }
+
+        /* Optional: Style for a selected item */
+        .recipe-list-item.selected {
+            background-color: #cfe2ff; /* Highlight selected item */
+            font-weight: bold;
+        }
+
+
+        /* --- Button Styling (Copied from index.html/recipes.html) --- */
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px; /* Space above buttons */
+        }
+
+        .button-container a {
+            flex-grow: 1;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 150px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .button-container a:hover {
+            background-color: #0056b3;
+        }
+         /* --- End Button Styling --- */
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>View Recipes</h1>
+
+        <div class="form-group">
+            <label for="search-recipes">Search Recipes:</label>
+            <input type="text" id="search-recipes" placeholder="Enter recipe name">
+        </div>
+
+        <div id="recipe-list-container">
+            <div class="recipe-list-item">Spaghetti Bolognese</div>
+            <div class="recipe-list-item">Chicken Stir-fry</div>
+            <div class="recipe-list-item">Vegetable Curry</div>
+            <div class="recipe-list-item">Homemade Pizza Dough</div>
+            <div class="recipe-list-item">Chocolate Chip Cookies</div>
+             <div class="recipe-list-item">Classic Beef Stew</div>
+             <div class="recipe-list-item">Lemon Herb Roasted Chicken</div>
+             <div class="recipe-list-item">Black Bean Burgers</div>
+             <div class="recipe-list-item">Quinoa Salad with Vegetables</div>
+             <div class="recipe-list-item">Lentil Soup</div>
+             <div class="recipe-list-item">Shrimp Scampi</div>
+             <div class="recipe-list-item">Tacos</div>
+             <div class="recipe-list-item">Grilled Salmon</div>
+             <div class="recipe-list-item">Pancakes</div>
+             <div class="recipe-list-item">Smoothie</div>
+             <div class="recipe-list-item">Oatmeal</div>
+        </div>
+
+        <div class="button-container">
+            <a href="#">View Recipe</a> <a href="index.html">Back to Home</a> </div>
+    </div>
+
+    <script>
+        // --- JavaScript for basic list item selection (optional but helpful) ---
+        const recipeListItems = document.querySelectorAll('.recipe-list-item');
+
+        recipeListItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove 'selected' class from all items
+                recipeListItems.forEach(li => {
+                    li.classList.remove('selected');
+                });
+                // Add 'selected' class to the clicked item
+                this.classList.add('selected');
+            });
+        });
+
+        // --- Basic search functionality (optional) ---
+        const searchInput = document.getElementById('search-recipes');
+        const recipeItems = document.querySelectorAll('.recipe-list-item'); // Get items again for search
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+
+            recipeItems.forEach(item => {
+                const recipeName = item.textContent.toLowerCase();
+                if (recipeName.includes(searchTerm)) {
+                    item.style.display = 'block'; // Show the item
+                } else {
+                    item.style.display = 'none'; // Hide the item
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
