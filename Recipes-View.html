@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Recipes - test2</title>
+    <title>View Recipes - test3</title>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
@@ -296,10 +296,10 @@
                  detailsHtml += `<p><strong>Cook Time:</strong> ${recipeData['Cook Time'] || 'N/A'}</p>`; // Use bracket notation
 
                  // Display Tags if they exist and are an array
-                 if (recipeData.['Tag(s)'] && Array.isArray(recipeData.['Tag(s)']) && recipeData.['Tag(s)'].length > 0) {
-                     detailsHtml += `<p><strong>['Tag(s)']:</strong> ${recipeData.['Tag(s)'].join(', ')}</p>`;
-                 } else if (recipeData.['Tag(s)']) { // Handle if Tags is a string or other non-array
-                     detailsHtml += `<p><strong>['Tag(s)']:</strong> ${recipeData.['Tag(s)']}</p>`;
+                 if (recipeData.Tags && Array.isArray(recipeData.Tags) && recipeData.Tags.length > 0) {
+                     detailsHtml += `<p><strong>Tags:</strong> ${recipeData.Tags.join(', ')}</p>`;
+                 } else if (recipeData.Tags) { // Handle if Tags is a string or other non-array
+                     detailsHtml += `<p><strong>Tags:</strong> ${recipeData.Tags}</p>`;
                  }
 
 
