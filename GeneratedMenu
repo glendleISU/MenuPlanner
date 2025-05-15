@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Menu</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: left;
+        }
+
+        h1 {
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #generated-menu-output {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            min-height: 100px; /* Ensure some space even if empty */
+        }
+
+        #generated-menu-output p {
+            margin-bottom: 8px; /* Space between menu lines */
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #ccc; /* Optional: dashed line separator */
+        }
+
+         #generated-menu-output p:last-child {
+             margin-bottom: 0;
+             padding-bottom: 0;
+             border-bottom: none;
+         }
+
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px; /* Space above buttons */
+        }
+
+        .button-container a {
+            flex-grow: 1;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 150px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center; /* Center text within buttons */
+        }
+
+        .button-container a:hover {
+            background-color: #0056b3;
+        }
+
+         /* Specific color for "Return to Date Selection" button */
+         .button-container a.return-button {
+             background-color: #6c757d; /* Grey color */
+         }
+
+         .button-container a.return-button:hover {
+             background-color: #5a6268;
+         }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Your Weekly Menu</h1>
+
+        <div id="generated-menu-output">
+            Loading menu...
+        </div>
+
+        <div class="button-container">
+            <a href="index.html">Back to Home</a>
+            <a href="plan.html" class="return-button">Return to Date Selection</a>
+        </div>
+    </div>
+
+    <script>
+        // --- JavaScript to parse URL parameters and display the menu ---
+
+        // Get reference to the output area
+        const generatedMenuOutput = document.getElementById('generated-menu-output');
+
+        // Use URLSearchParams to easily get parameters from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Object to hold the selected meals by date
+        const selectedMeals = {};
+
+        // Iterate through all parameters
+        for (const [key, value] of urlParams) {
+            // Check if the parameter name starts with 'meals['
+            if (key.startsWith('meals[')) {
+                // Extract the date from the parameter name (e.g., 'meals[2025-05-15][]' -> '2025-05-15')
+                const dateMatch = key.match(/meals\[(.*?)\]/);
+                if (dateMatch && dateMatch[1]) {
+                    const date = dateMatch[1];
+                    const meal = value; // The value is the meal name (Breakfast, Lunch, Supper)
+
+                    // If the date isn't in our selectedMeals object yet, create an array for it
+                    if (!selectedMeals[date]) {
+                        selectedMeals[date] = [];
+                    }
+                    // Add the meal to the array for that date
+                    selectedMeals[date].push(meal);
+                }
+            }
+        }
+
+        // Clear the "Loading menu..." text
+        generatedMenuOutput.innerHTML = '';
+
+        // Check if any meals were selected
+        const datesWithMeals = Object.keys(selectedMeals);
+        if (datesWithMeals.length === 0) {
+            generatedMenuOutput.innerHTML = "<p>No meals were selected for the menu.</p>";
+        } else {
+            // Sort dates chronologically
+            datesWithMeals.sort((a, b) => new Date(a) - new Date(b));
+
+            // Generate and display the output lines
+            datesWithMeals.forEach(dateString => {
+                // Format the date to M/D
+                const [year, month, day] = dateString.split('-');
+                const formattedDate = `${parseInt(month, 10)}/${parseInt(day, 10)}`; // Convert to integer to remove leading zeros
+
+                // Sort meals in a standard order (optional, but nice)
+                const mealOrder = ["Breakfast", "Lunch", "Supper"];
+                selectedMeals[dateString].sort((a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
+
+                selectedMeals[dateString].forEach(meal => {
+                    const p = document.createElement('p');
+                    p.textContent = `${formattedDate} - ${meal}`;
+                    generatedMenuOutput.appendChild(p);
+                });
+            });
+        }
+
+    </script>
+
+</body>
+</html>
