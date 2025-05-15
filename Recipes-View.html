@@ -1,133 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-
-    <script>
-        // --- Firebase Configuration ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
-            authDomain: "menuplanner-d991d.firebaseapp.com",
-            projectId: "menuplanner-d991d",
-            storageBucket: "menuplanner-d991d.firebasestorage.app",
-            messagingSenderId: "494188917249",
-            appId: "1:494188917249:web:59aa705a5f36e231a60600",
-            measurementId: "G-7MP3X52GQ7"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-
-        // Get a reference to the Firestore database
-        const db = firebase.firestore();
-
-        // Get a reference to the "Recipes" collection
-        const recipesCollection = db.collection('Recipes');
-
-
-        // --- JavaScript for interactivity and displaying recipes ---
-
-        const searchInput = document.getElementById('search-recipes');
-        const recipeListContainer = document.getElementById('recipe-list-container');
-
-
-        // Function to display recipes in the list
-        function displayRecipes(recipes) {
-            // Clear current list content
-            recipeListContainer.innerHTML = '';
-
-            if (recipes.length === 0) {
-                recipeListContainer.innerHTML = '<p>No recipes found.</p>';
-                return;
-            }
-
-            recipes.forEach(recipe => {
-                const recipeItemDiv = document.createElement('div');
-                recipeItemDiv.classList.add('recipe-list-item');
-                // Store the Firestore document ID on the element for later use (e.g., viewing details)
-                recipeItemDiv.dataset.id = recipe.id;
-                // Display the recipe name
-                recipeItemDiv.textContent = recipe.data().recipeName || 'Unnamed Recipe'; // Use a default if name is missing
-
-                recipeListContainer.appendChild(recipeItemDiv);
-            });
-
-            // Re-attach event listeners after updating the list (using delegation is better)
-             attachListItemListeners();
-        }
-
-        // Function to attach click listeners to list items (using event delegation)
-        function attachListItemListeners() {
-             // Attach a single click listener to the container
-             recipeListContainer.addEventListener('click', function(event) {
-                 // Check if the clicked element or its parent is a recipe list item
-                 const clickedItem = event.target.closest('.recipe-list-item');
-
-                 if (clickedItem) {
-                     // Remove 'selected' class from all items
-                     document.querySelectorAll('.recipe-list-item').forEach(item => {
-                         item.classList.remove('selected');
-                     });
-                     // Add 'selected' class to the clicked item
-                     clickedItem.classList.add('selected');
-
-                     // You can get the recipe ID using clickedItem.dataset.id here if needed
-                     console.log("Recipe selected:", clickedItem.textContent, "ID:", clickedItem.dataset.id);
-                 }
-             });
-        }
-
-
-        // Function to fetch recipes from Firestore
-        async function fetchRecipes() {
-            try {
-                // Display a loading message
-                recipeListContainer.innerHTML = '<p>Loading recipes...</p>';
-
-                const snapshot = await recipesCollection.get(); // Get all documents in the collection
-                const recipes = snapshot.docs; // Array of document snapshots
-
-                displayRecipes(recipes); // Display the fetched recipes
-
-            } catch (error) {
-                console.error("Error fetching recipes:", error);
-                recipeListContainer.innerHTML = '<p>Error loading recipes.</p>';
-            }
-        }
-
-        // --- Event Listeners ---
-
-        // Basic search functionality (updated to search displayed items)
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const recipeItems = recipeListContainer.querySelectorAll('.recipe-list-item'); // Get current items
-
-            recipeItems.forEach(item => {
-                const recipeName = item.textContent.toLowerCase();
-                if (recipeName.includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
-
-        // --- Initial Setup ---
-
-        // Fetch and display recipes when the page loads
-        fetchRecipes();
-
-        // Note: The "View Recipe" button will need more JavaScript
-        // to get the selected recipe ID and navigate to a detail page.
-
-    </script>
-
-</body>
-</html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Recipes</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -188,6 +72,7 @@
             padding: 10px;
             margin-bottom: 20px; /* Space below the list */
             background-color: #fff; /* White background for the list */
+            /* Initially empty, will be populated by JavaScript */
         }
 
         /* Style for individual items in the list (example) */
@@ -255,60 +140,131 @@
             <input type="text" id="search-recipes" placeholder="Enter recipe name">
         </div>
 
-        <!-- <div id="recipe-list-container">
-            <div class="recipe-list-item">Spaghetti Bolognese</div>
-            <div class="recipe-list-item">Chicken Stir-fry</div>
-            <div class="recipe-list-item">Vegetable Curry</div>
-            <div class="recipe-list-item">Homemade Pizza Dough</div>
-            <div class="recipe-list-item">Chocolate Chip Cookies</div>
-            <div class="recipe-list-item">Classic Beef Stew</div>
-            <div class="recipe-list-item">Lemon Herb Roasted Chicken</div>
-            <div class="recipe-list-item">Black Bean Burgers</div>
-            <div class="recipe-list-item">Quinoa Salad with Vegetables</div>
-            <div class="recipe-list-item">Lentil Soup</div>
-            <div class="recipe-list-item">Shrimp Scampi</div>
-            <div class="recipe-list-item">Tacos</div>
-            <div class="recipe-list-item">Grilled Salmon</div>
-            <div class="recipe-list-item">Pancakes</div>
-            <div class="recipe-list-item">Smoothie</div>
-            <div class="recipe-list-item">Oatmeal</div>
-        </div> -->
+        <div id="recipe-list-container">
+            <p>Loading recipes...</p> </div>
 
         <div class="button-container">
             <a href="#">View Recipe</a> <a href="index.html">Back to Home</a> </div>
     </div>
 
     <script>
-        // --- JavaScript for basic list item selection (optional but helpful) ---
-        const recipeListItems = document.querySelectorAll('.recipe-list-item');
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
+            authDomain: "menuplanner-d991d.firebaseapp.com",
+            projectId: "menuplanner-d991d",
+            storageBucket: "menuplanner-d991d.firebasestorage.app",
+            messagingSenderId: "494188917249",
+            appId: "1:494188917249:web:59aa705a5f36e231a60600",
+            measurementId: "G-7MP3X52GQ7" // This is often included, but not strictly needed for Firestore basic usage
+        };
 
-        recipeListItems.forEach(item => {
-            item.addEventListener('click', function() {
-                // Remove 'selected' class from all items
-                recipeListItems.forEach(li => {
-                    li.classList.remove('selected');
-                });
-                // Add 'selected' class to the clicked item
-                this.classList.add('selected');
-            });
-        });
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
 
-        // --- Basic search functionality (optional) ---
+        // Get a reference to the Firestore database
+        const db = firebase.firestore();
+
+        // Get a reference to the "Recipes" collection
+        const recipesCollection = db.collection('Recipes');
+
+
+        // --- JavaScript for interactivity and displaying recipes ---
+
         const searchInput = document.getElementById('search-recipes');
-        const recipeItems = document.querySelectorAll('.recipe-list-item'); // Get items again for search
+        const recipeListContainer = document.getElementById('recipe-list-container');
 
+
+        // Function to display recipes in the list
+        function displayRecipes(recipes) {
+            // Clear current list content
+            recipeListContainer.innerHTML = '';
+
+            if (recipes.length === 0) {
+                recipeListContainer.innerHTML = '<p>No recipes found.</p>';
+                return;
+            }
+
+            recipes.forEach(recipe => {
+                const recipeItemDiv = document.createElement('div');
+                recipeItemDiv.classList.add('recipe-list-item');
+                // Store the Firestore document ID on the element for later use (e.g., viewing details)
+                recipeItemDiv.dataset.id = recipe.id;
+                // Display the recipe name - Assuming the field is named 'recipeName'
+                recipeItemDiv.textContent = recipe.data().recipeName || 'Unnamed Recipe'; // Use a default if name is missing
+
+                recipeListContainer.appendChild(recipeItemDiv);
+            });
+
+            // Attach event listeners after updating the list (using delegation is better)
+            // The event listener is now attached once to the container, so no need to re-attach here.
+            // attachListItemListeners(); // <-- We will call this once at the end
+        }
+
+        // Function to attach click listeners to list items (using event delegation)
+        function attachListItemListeners() {
+             // Attach a single click listener to the container
+             recipeListContainer.addEventListener('click', function(event) {
+                 // Check if the clicked element or its parent is a recipe list item
+                 const clickedItem = event.target.closest('.recipe-list-item');
+
+                 if (clickedItem) {
+                     // Remove 'selected' class from all items
+                     recipeListContainer.querySelectorAll('.recipe-list-item').forEach(item => { // Query within the container
+                         item.classList.remove('selected');
+                     });
+                     // Add 'selected' class to the clicked item
+                     clickedItem.classList.add('selected');
+
+                     // You can get the recipe ID using clickedItem.dataset.id here if needed
+                     console.log("Recipe selected:", clickedItem.textContent, "ID:", clickedItem.dataset.id);
+                 }
+             });
+        }
+
+
+        // Function to fetch recipes from Firestore
+        async function fetchRecipes() {
+            try {
+                // The loading message is already in the HTML initially
+
+                const snapshot = await recipesCollection.get(); // Get all documents in the collection
+                const recipes = snapshot.docs; // Array of document snapshots
+
+                displayRecipes(recipes); // Display the fetched recipes
+
+            } catch (error) {
+                console.error("Error fetching recipes:", error);
+                recipeListContainer.innerHTML = '<p>Error loading recipes.</p>';
+            }
+        }
+
+        // --- Event Listeners ---
+
+        // Basic search functionality (updated to search displayed items)
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
+            const recipeItems = recipeListContainer.querySelectorAll('.recipe-list-item'); // Get current items
 
             recipeItems.forEach(item => {
                 const recipeName = item.textContent.toLowerCase();
                 if (recipeName.includes(searchTerm)) {
-                    item.style.display = 'block'; // Show the item
+                    item.style.display = 'block';
                 } else {
-                    item.style.display = 'none'; // Hide the item
+                    item.style.display = 'none';
                 }
             });
         });
+
+        // --- Initial Setup ---
+
+        // Fetch and display recipes when the page loads
+        fetchRecipes();
+
+        // Attach the single click listener to the container once
+        attachListItemListeners();
+
+
     </script>
 
 </body>
