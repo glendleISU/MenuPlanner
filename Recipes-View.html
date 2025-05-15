@@ -329,19 +329,25 @@
 
         // Function to fetch recipes from Firestore (remains the same)
         async function fetchRecipes() {
-            try {
-                // The loading message is already in the HTML initially
+             console.log("fetchRecipes called"); // <-- Check if this appears
+             try {
+                 // The loading message is already in the HTML initially
+                 console.log("Attempting to get documents from 'Recipes' collection"); // <-- Check if this appears
 
-                const snapshot = await recipesCollection.get();
-                const recipes = snapshot.docs;
+                 const snapshot = await recipesCollection.get(); // <--- This is the line we suspect might be hanging
 
-                displayRecipes(recipes);
+                 console.log("Successfully got snapshot"); // <-- Check if this appears
+                 console.log("Number of documents:", snapshot.docs.length); // <-- Check the number
 
-            } catch (error) {
-                console.error("Error fetching recipes:", error);
-                recipeListContainer.innerHTML = '<p>Error loading recipes.</p>';
-            }
-        }
+                 const recipes = snapshot.docs;
+
+                 displayRecipes(recipes);
+
+             } catch (error) {
+                 console.error("Error fetching recipes:", error); // <-- Check if an error is logged here
+                 recipeListContainer.innerHTML = '<p>Error loading recipes.</p>';
+             }
+         }
 
         // --- Event Listeners ---
 
