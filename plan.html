@@ -3,11 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan Menu</title>
+    <title>Plan Your Menu</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: left; /* Align text to the left for forms */
+        }
+
+        h1 {
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center; /* Center the heading */
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block; /* Label on its own line */
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="number"],
+        .form-group select {
+            width: calc(100% - 22px); /* Adjust width for padding and border */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .radio-group label {
+             display: inline-block; /* Allow radio buttons and labels to be inline */
+             margin-right: 15px; /* Space between radio options */
+             font-weight: normal; /* Labels for radios don't need to be bold */
+        }
+
+        .radio-group input[type="radio"] {
+            margin-right: 5px; /* Space between radio button and its label */
+        }
+
+        button[type="submit"] {
+            display: block; /* Make the button take the full width */
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #28a745; /* Green background for submit */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px; /* Space above the button */
+        }
+
+        button[type="submit"]:hover {
+            background-color: #218838; /* Darker green on hover */
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+         .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Plan a Menu</h1>
-    <p>This is where you will plan your weekly menu.</p>
-    <p><a href="index.html">Back to Home</a></p>
+
+    <div class="container">
+        <h1>Plan Your Menu</h1>
+
+        <form action="#" method="post"> <div class="form-group">
+                <label for="num-days">Number of days for the menu:</label>
+                <input type="number" id="num-days" name="num_days" min="1" max="7" value="7">
+            </div>
+
+            <div class="form-group">
+                <label>Start day of the week:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="start_day" value="Wednesday" checked> Wednesday</label>
+                    <label><input type="radio" name="start_day" value="Thursday"> Thursday</label>
+                    <label><input type="radio" name="start_day" value="Friday"> Friday</label>
+                    <label><input type="radio" name="start_day" value="Saturday"> Saturday</label>
+                    <label><input type="radio" name="start_day" value="Sunday"> Sunday</label>
+                    <label><input type="radio" name="start_day" value="Monday"> Monday</label>
+                    <label><input type="radio" name="start_day" value="Tuesday"> Tuesday</label>
+                </div>
+            </div>
+
+            <button type="submit">Generate Menu</button>
+
+        </form>
+
+        <a href="index.html" class="back-link">Back to Home</a>
+    </div>
+
 </body>
 </html>
