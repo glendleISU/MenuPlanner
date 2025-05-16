@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Recipe</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            text-align: left; /* Align form content to the left */
+        }
+
+        h1 {
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center; /* Center the heading */
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea {
+            width: calc(100% - 22px); /* Adjust width for padding and border */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical; /* Allow vertical resizing */
+            min-height: 100px; /* Minimum height for textareas */
+        }
+
+         .checkbox-group label {
+             display: inline-block; /* Arrange checkboxes horizontally */
+             margin-right: 15px; /* Space between checkboxes */
+             font-weight: normal; /* Labels for checkboxes don't need to be bold */
+         }
+
+          #status-message {
+              margin-top: 20px;
+              padding: 10px;
+              border-radius: 4px;
+              display: none; /* Hidden by default */
+          }
+
+          #status-message.success {
+              background-color: #d4edda; /* Light green */
+              color: #155724; /* Dark green */
+              border-color: #c3e6cb;
+          }
+
+           #status-message.error {
+               background-color: #f8d7da; /* Light red */
+               color: #721c24; /* Dark red */
+               border-color: #f5c6cb;
+           }
+
+
+        /* --- Button Styling --- */
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px; /* Space above buttons */
+        }
+
+        .button-container button[type="submit"] {
+             flex-grow: 1;
+             padding: 12px 20px;
+             font-size: 1rem;
+             color: #fff;
+             background-color: #28a745; /* Green for Save */
+             border: none;
+             border-radius: 5px;
+             cursor: pointer;
+             transition: background-color 0.3s ease;
+             min-width: 150px;
+        }
+
+        .button-container button[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+
+        .button-container a {
+            flex-grow: 1;
+            padding: 12px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007bff; /* Blue */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            min-width: 150px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .button-container a:hover {
+            background-color: #0056b3;
+        }
+         /* --- End Button Styling --- */
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Create New Recipe</h1>
+
+        <form id="create-recipe-form">
+
+            <div class="form-group">
+                <label for="recipe-name">Recipe Name:</label>
+                <input type="text" id="recipe-name" name="name" required>
+            </div>
+
+             <div class="form-group">
+                 <label>Meal(s):</label>
+                 <div class="checkbox-group">
+                     <label><input type="checkbox" name="meal[]" value="Breakfast"> Breakfast</label>
+                     <label><input type="checkbox" name="meal[]" value="Lunch"> Lunch</label>
+                     <label><input type="checkbox" name="meal[]" value="Dinner"> Dinner</label>
+                 </div>
+             </div>
+
+
+            <div class="form-group">
+                <label for="servings">Number of Servings:</label>
+                <input type="number" id="servings" name="servings" min="1" required>
+            </div>
+
+             <div class="form-group">
+                 <label for="prep-time">Prep. Time:</label>
+                 <input type="text" id="prep-time" name="prepTime">
+             </div>
+
+             <div class="form-group">
+                 <label for="cook-time">Cook Time:</label>
+                 <input type="text" id="cook-time" name="cookTime">
+             </div>
+
+
+            <div class="form-group">
+                <label for="ingredients">Ingredients (one per line):</label>
+                <textarea id="ingredients" name="ingredients" rows="6" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Tags (comma-separated):</label>
+                <input type="text" id="tags" name="tags">
+            </div>
+
+
+            <div class="form-group">
+                <label for="directions">Directions:</label>
+                <textarea id="directions" name="directions" rows="8" required></textarea>
+            </div>
+
+            <div id="status-message"></div> <div class="button-container">
+                <button type="submit">Save Recipe</button>
+                <a href="Recipes-View.html">View Recipes</a> <a href="index.html">Back to Home</a> </div>
+
+        </form>
+
+    </div>
+
+    <script>
+        // --- Firebase Configuration ---
+        // REPLACE THIS OBJECT WITH YOUR ACTUAL FIREBASE CONFIGURATION
+        const firebaseConfig = {
+          apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
+          authDomain: "menuplanner-d991d.firebaseapp.com",
+          projectId: "menuplanner-d991d",
+          storageBucket: "menuplanner-d991d.firebasestorage.app",
+          messagingSenderId: "494188917249",
+          appId: "1:494188917249:web:59aa705a5f36e231a60600",
+          measurementId: "G-7MP3X52GQ7"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+
+        // Get a reference to the Firestore database
+        const db = firebase.firestore();
+
+        // Get a reference to the "Recipes" collection
+        const recipesCollection = db.collection('Recipes');
+
+
+        // --- JavaScript for Form Submission ---
+
+        const createRecipeForm = document.getElementById('create-recipe-form');
+        const statusMessageDiv = document.getElementById('status-message');
+
+        createRecipeForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // --- Get Form Values ---
+            const name = document.getElementById('recipe-name').value.trim();
+            const servings = parseInt(document.getElementById('servings').value, 10); // Parse as integer
+            const prepTime = document.getElementById('prep-time').value.trim();
+            const cookTime = document.getElementById('cook-time').value.trim();
+            const directions = document.getElementById('directions').value.trim();
+
+            // Ingredients (split by new line, filter out empty lines)
+            const ingredientsText = document.getElementById('ingredients').value.trim();
+            const ingredients = ingredientsText ? ingredientsText.split('\n').map(item => item.trim()).filter(item => item !== '') : [];
+
+            // Tags (split by comma, trim whitespace, filter out empty tags)
+            const tagsText = document.getElementById('tags').value.trim();
+            const tags = tagsText ? tagsText.split(',').map(item => item.trim()).filter(item => item !== '') : [];
+
+            // Meal (get values from checked checkboxes)
+            const mealCheckboxes = document.querySelectorAll('input[name="meal[]"]:checked');
+            const meal = Array.from(mealCheckboxes).map(checkbox => checkbox.value); // Create an array of checked values
+
+
+            // --- Basic Validation (Optional, but good practice) ---
+            if (!name || isNaN(servings) || servings <= 0 || !ingredients.length || !directions) {
+                 displayStatusMessage('Please fill in all required fields (Name, Servings, Ingredients, Directions).', 'error');
+                 return; // Stop the submission process
+            }
+
+
+            // --- Prepare Data for Firestore ---
+            const newRecipeData = {
+                Name: name, // Use 'Name' as per your Firestore field
+                'Number of Servings': servings, // Use bracket notation for field name with space
+                'Prep. Time': prepTime, // Use bracket notation
+                'Cook Time': cookTime, // Use bracket notation
+                Ingredients: ingredients, // Array of strings
+                Tags: tags, // Array of strings
+                Meal: meal, // Array of selected meals
+                Directions: directions, // String
+                 // You could add a timestamp here: createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // --- Add Data to Firestore ---
+            try {
+                // Display a saving message
+                 displayStatusMessage('Saving recipe...', 'info'); // 'info' class not defined, will just use default
+
+                const docRef = await recipesCollection.add(newRecipeData); // Add the document
+
+                console.log("Document written with ID: ", docRef.id);
+
+                // Display success message
+                displayStatusMessage('Recipe saved successfully!', 'success');
+
+                // Optional: Clear the form after successful submission
+                createRecipeForm.reset();
+                // Also clear ingredients and tags text areas if reset doesn't handle them fully
+                document.getElementById('ingredients').value = '';
+                document.getElementById('tags').value = '';
+
+
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                displayStatusMessage(`Error saving recipe: ${error.message}`, 'error'); // Display the error message
+                 // Note: For permission errors, you might not get a detailed message in the browser
+            }
+        });
+
+        // Function to display status messages
+        function displayStatusMessage(message, type) {
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.className = ''; // Clear existing classes
+            statusMessageDiv.classList.add(type); // Add 'success', 'error', or 'info' class
+            statusMessageDiv.style.display = 'block'; // Make the message area visible
+
+            // Optional: Hide the message after a few seconds
+            // setTimeout(() => {
+            //     statusMessageDiv.style.display = 'none';
+            // }, 5000); // Hide after 5 seconds
+        }
+
+         // Note: For security, in a real-world app, you would likely want to perform validation
+         // and Firestore write operations from a trusted environment (your backend server)
+         // rather than directly from the client-side JavaScript. This requires setting up
+         // Firebase Authentication and more complex Security Rules.
+
+    </script>
+
+</body>
+</html>
