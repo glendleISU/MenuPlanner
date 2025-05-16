@@ -112,65 +112,39 @@
     </div>
 
     <script>
-        // --- JavaScript to parse URL parameters and display the menu ---
+        // --- JavaScript to read from Session Storage and display the menu ---
 
         // Get reference to the output area
         const generatedMenuOutput = document.getElementById('generated-menu-output');
 
-        // Use URLSearchParams to easily get parameters from the URL
-        const urlParams = new URLSearchParams(window.location.search);
+        // Read the generated menu data from Session Storage
+        const generatedMenuDataJson = sessionStorage.getItem('generatedMenu');
+        const generatedMenuData = JSON.parse(generatedMenuDataJson);
 
-        // Object to hold the selected meals by date
-        const selectedMeals = {};
 
-        // Iterate through all parameters
-        for (const [key, value] of urlParams) {
-            // Check if the parameter name starts with 'meals['
-            if (key.startsWith('meals[')) {
-                // Extract the date from the parameter name (e.g., 'meals[2025-05-15][]' -> '2025-05-15')
-                const dateMatch = key.match(/meals\[(.*?)\]/);
-                if (dateMatch && dateMatch[1]) {
-                    const date = dateMatch[1];
-                    const meal = value; // The value is the meal name (Breakfast, Lunch, Supper)
-
-                    // If the date isn't in our selectedMeals object yet, create an array for it
-                    if (!selectedMeals[date]) {
-                        selectedMeals[date] = [];
-                    }
-                    // Add the meal to the array for that date
-                    selectedMeals[date].push(meal);
-                }
-            }
-        }
-
-        // Clear the "Loading menu..." text
+        // Clear the "Loading menu..." text (or initial content)
         generatedMenuOutput.innerHTML = '';
 
-        // Check if any meals were selected
-        const datesWithMeals = Object.keys(selectedMeals);
-        if (datesWithMeals.length === 0) {
-            generatedMenuOutput.innerHTML = "<p>No meals were selected for the menu.</p>";
+        // Check if generated menu data exists
+        if (!generatedMenuData || generatedMenuData.length === 0) {
+            generatedMenuOutput.innerHTML = "<p>No menu data found. Please generate a menu first.</p>";
         } else {
-            // Sort dates chronologically
-            datesWithMeals.sort((a, b) => new Date(a) - new Date(b));
+            // Display the generated menu items
+            generatedMenuData.forEach(item => {
+                 // Format the date to M/D
+                 const dateObj = new Date(item.date); // Convert YYYY-MM-DD string back to Date object
+                 const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
 
-            // Generate and display the output lines
-            datesWithMeals.forEach(dateString => {
-                // Format the date to M/D
-                const [year, month, day] = dateString.split('-');
-                const formattedDate = `${parseInt(month, 10)}/${parseInt(day, 10)}`; // Convert to integer to remove leading zeros
-
-                // Sort meals in a standard order (optional, but nice)
-                const mealOrder = ["Breakfast", "Lunch", "Supper"];
-                selectedMeals[dateString].sort((a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
-
-                selectedMeals[dateString].forEach(meal => {
-                    const p = document.createElement('p');
-                    p.textContent = `${formattedDate} - ${meal}`;
-                    generatedMenuOutput.appendChild(p);
-                });
+                 const p = document.createElement('p');
+                 // Display Date - Meal - Recipe Name
+                 p.textContent = `${formattedDate} - ${item.meal} - ${item.recipeName}`;
+                 generatedMenuOutput.appendChild(p);
             });
         }
+
+        // Optional: Clear Session Storage after reading the data if you only want it for one view
+        // sessionStorage.removeItem('generatedMenu');
+
 
     </script>
 
