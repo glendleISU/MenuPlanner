@@ -317,9 +317,13 @@
              const mealOrder = ["Breakfast", "Lunch", "Dinner"]; // Used for consistent sorting of items within a day if needed later
 
              menuData.forEach(item => {
-                  // Format the date from YYYY-MM-DD to M/D
-                  const dateObj = new Date(item.date);
-                  const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+                // Format the date from YYYY-MM-DD to M/D
+                 // Create the Date object parsing components to avoid timezone issues
+                 const [year, month, day] = item.date.split('-').map(Number); // Split and convert to numbers
+                 // Note: Month is 0-indexed in JavaScript Date constructor, so subtract 1
+                 const dateObj = new Date(year, month - 1, day); // <-- Adjusted line
+
+                 const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
 
                   // Create a div for each menu line
                   const menuLineDiv = document.createElement('div');
