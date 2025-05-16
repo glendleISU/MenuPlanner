@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plan Your Menu</title>
 
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
-
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
@@ -38,14 +35,14 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             max-width: 700px;
             width: 100%;
-            text-align: left; /* Align form content to the left */
+            text-align: left;
         }
 
         h1 {
             color: #0056b3;
             margin-top: 0;
             margin-bottom: 20px;
-            text-align: center; /* Center the heading */
+            text-align: center;
         }
 
         .form-group {
@@ -114,7 +111,7 @@
             padding: 12px 20px;
             font-size: 1rem;
             color: #fff;
-            background-color: #28a745; /* Green for Generate */
+            background-color: #28a745;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -138,21 +135,6 @@
             text-decoration: underline;
         }
 
-        #date-range-error {
-            color: #dc3545; /* Red color for error messages */
-            font-size: 0.9em;
-            margin-top: 5px;
-            display: none; /* Hide initially */
-        }
-
-        #loading-recipes-message {
-             text-align: center;
-             margin-top: 20px;
-             font-style: italic;
-             color: #555;
-        }
-
-
     </style>
 </head>
 <body>
@@ -163,17 +145,17 @@
         <form action="GeneratedMenu.html" method="get" id="menu-plan-form">
 
             <div class="form-group">
-                <label for="date-range">Select date range (max 7 days):</label>
+                <label for="date-range">Select date range:</label>
                 <input type="text" id="date-range" name="date_range">
-                 <div id="date-range-error"></div> </div>
+            </div>
 
             <div class="form-group">
-                 <label>Select meals for each day:</label>
-                <div class="day-options-container">
+                 <label>Selected days and meals:</label>
+                 <div class="day-options-container">
                     </div>
-                 <div id="loading-recipes-message">Loading available recipes...</div> </div>
+            </div>
 
-            <button type="submit" id="generate-button">Generate Menu</button>
+            <button type="submit">Generate Menu</button>
 
         </form>
 
@@ -181,42 +163,16 @@
     </div>
 
     <script>
-        // --- Firebase Configuration ---
-        const firebaseConfig = {
-              apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
-              authDomain: "menuplanner-d991d.firebaseapp.com",
-              projectId: "menuplanner-d991d",
-              storageBucket: "menuplanner-d991d.firebasestorage.app",
-              messagingSenderId: "494188917249",
-              appId: "1:494188917249:web:59aa705a5f36e231a60600",
-              measurementId: "G-7MP3X52GQ7"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-
-        // Get a reference to the Firestore database
-        const db = firebase.firestore();
-
-        // Get a reference to the "Recipes" collection
-        const recipesCollection = db.collection('Recipes');
-
-        // --- Global variable to store all fetched recipes ---
-        let allRecipes = []; // Store recipe documents (with id and data())
-
         // --- JavaScript for interactivity and dynamic content ---
 
+        // Get references to key elements
         const dateRangeInput = document.getElementById('date-range');
-        const dateRangeErrorDiv = document.getElementById('date-range-error'); // Get the error message div
         const dayOptionsContainer = document.querySelector('.day-options-container');
-        const loadingRecipesMessage = document.getElementById('loading-recipes-message');
-        const generateButton = document.getElementById('generate-button');
-
 
         // Helper function to format a date as "YYYY-MM-DD"
         function formatDate(date) {
             const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
@@ -227,62 +183,44 @@
              return days[date.getDay()];
          }
 
-         // Function to show/hide meal options and manage their checked state
-         function toggleMealOptions(dayCheckbox) {
-             const mealOptionsId = dayCheckbox.getAttribute('data-meal-options');
-             const mealOptionsDiv = document.getElementById(mealOptionsId);
-             if (!mealOptionsDiv) return;
 
-             const mealCheckboxes = mealOptionsDiv.querySelectorAll('input[type="checkbox"]');
+        // Function to show/hide meal options and manage their checked state
+        function toggleMealOptions(dayCheckbox) {
+            const mealOptionsId = dayCheckbox.getAttribute('data-meal-options');
+            const mealOptionsDiv = document.getElementById(mealOptionsId);
+            if (!mealOptionsDiv) return; // Exit if the meal options div doesn't exist
 
-             if (dayCheckbox.checked) {
-                 mealOptionsDiv.style.display = 'block';
+            const mealCheckboxes = mealOptionsDiv.querySelectorAll('input[type="checkbox"]');
 
-                 // Check meal options when the day is checked
-                 mealCheckboxes.forEach(mealCheckbox => {
-                     mealCheckbox.checked = true;
-                 });
+            if (dayCheckbox.checked) {
+                mealOptionsDiv.style.display = 'block';
 
-             } else {
-                 mealOptionsDiv.style.display = 'none';
+                // Check meal options when the day is checked
+                mealCheckboxes.forEach(mealCheckbox => {
+                    mealCheckbox.checked = true;
+                });
 
-                 // Uncheck meal options when the day is unchecked
-                 mealCheckboxes.forEach(mealCheckbox => {
-                     mealCheckbox.checked = false;
-                 });
-             }
-         }
+            } else {
+                mealOptionsDiv.style.display = 'none';
 
+                // Uncheck meal options when the day is unchecked
+                mealCheckboxes.forEach(mealCheckbox => {
+                    mealCheckbox.checked = false;
+                });
+            }
+        }
 
         // Function to generate and display day options based on the date range
         function generateAndDisplayDayOptions(startMoment, endMoment) {
             // Clear previous day options
             dayOptionsContainer.innerHTML = '';
-            dateRangeErrorDiv.textContent = ''; // Clear any previous error messages
-            dateRangeErrorDiv.style.display = 'none';
-
-            // Ensure recipes are loaded before proceeding
-            if (allRecipes.length === 0) {
-                 // This should ideally not happen if fetchRecipes ran on load,
-                 // but added as a safeguard.
-                 dayOptionsContainer.innerHTML = '<p>Recipes not loaded. Please try refreshing.</p>';
-                 return;
-            }
-
 
             const startDate = startMoment.toDate(); // Convert Moment.js object to Date object
             const endDate = endMoment.toDate(); // Convert Moment.js object to Date object
 
             const timeDiff = endDate.getTime() - startDate.getTime();
-            const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // Include start and end day
+            const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-            // Validation (Date Range Picker also has maxSpan, but good to double-check)
-            if (diffDays > 7) {
-                 dateRangeErrorDiv.textContent = 'Date range cannot exceed 7 days.';
-                 dateRangeErrorDiv.style.display = 'block';
-                 dayOptionsContainer.innerHTML = ''; // Clear days if range is invalid
-                 return;
-            }
 
             // Generate day options for the selected range
             let currentDate = new Date(startDate);
@@ -294,7 +232,7 @@
                 // Create the HTML for a single day option
                 const dayOptionDiv = document.createElement('div');
                 dayOptionDiv.classList.add('day-option');
-                dayOptionDiv.setAttribute('data-date', dateString);
+                dayOptionDiv.setAttribute('data-date', dateString); // Store the date on the element
 
                 // Use the date string in checkbox values and names for uniqueness
                 dayOptionDiv.innerHTML = `
@@ -309,6 +247,7 @@
                     </div>
                 `;
 
+                // Append the new day option to the container
                 dayOptionsContainer.appendChild(dayOptionDiv);
 
                 // Add event listener to the new day checkbox and toggle meals
@@ -319,123 +258,10 @@
                  // Call toggleMealOptions initially because the checkbox is checked by default
                  toggleMealOptions(newDayCheckbox);
 
-
                 // Move to the next day
                 currentDate.setDate(currentDate.getDate() + 1);
             }
         }
-
-
-        // Function to fetch all recipes from Firestore
-        async function fetchRecipes() {
-            try {
-                loadingRecipesMessage.textContent = 'Loading available recipes...';
-                 loadingRecipesMessage.style.display = 'block'; // Show loading message
-
-                const snapshot = await recipesCollection.get();
-                allRecipes = snapshot.docs; // Store all fetched document snapshots
-
-                 loadingRecipesMessage.textContent = ''; // Clear loading message
-                 loadingRecipesMessage.style.display = 'none';
-
-
-            } catch (error) {
-                console.error("Error fetching recipes:", error);
-                loadingRecipesMessage.textContent = 'Error loading available recipes.';
-                 loadingRecipesMessage.style.display = 'block';
-                 generateButton.disabled = true; // Disable generate button if recipes fail to load
-            }
-        }
-
-
-        // --- Form Submission Handler ---
-        createRecipeForm.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent standard form submission
-
-            // Ensure recipes are loaded before attempting generation
-            if (allRecipes.length === 0) {
-                 alert("Recipes are still loading or failed to load. Cannot generate menu.");
-                 return;
-            }
-
-            const generatedMenuData = [];
-            const selectedDays = dayOptionsContainer.querySelectorAll('.day-option input[type="checkbox"]:checked');
-
-            if (selectedDays.length === 0) {
-                 alert("Please select at least one day to generate a menu.");
-                 return;
-            }
-
-
-            selectedDays.forEach(dayCheckbox => {
-                const dateString = dayCheckbox.value; // e.g., "2025-05-14"
-                const dayId = dayCheckbox.id; // Use the ID which is also the date string
-                const mealOptionsDiv = document.getElementById(`${dayId}-meals`);
-
-                if (mealOptionsDiv) {
-                    const selectedMealsForDay = Array.from(mealOptionsDiv.querySelectorAll('input[type="checkbox"]:checked'))
-                                                    .map(checkbox => checkbox.value); // e.g., ["Breakfast", "Supper"]
-
-                     selectedMealsForDay.forEach(mealType => {
-                         // Find recipes that match this meal type
-                         const recipesForMealType = allRecipes.filter(recipeDoc => {
-                              const recipeData = recipeDoc.data();
-                              // Check if the recipe's Meal field (array or string) includes the mealType
-                              if (recipeData.Meal) {
-                                  if (Array.isArray(recipeData.Meal)) {
-                                       return recipeData.Meal.includes(mealType);
-                                  } else if (typeof recipeData.Meal === 'string') {
-                                       return recipeData.Meal === mealType;
-                                  }
-                              }
-                              return false; // No Meal field or doesn't match
-                         });
-
-                         let selectedRecipeName = 'No recipe found for this meal type';
-                         let selectedRecipeId = null;
-
-                         if (recipesForMealType.length > 0) {
-                              // Randomly select one recipe
-                              const randomIndex = Math.floor(Math.random() * recipesForMealType.length);
-                              const randomRecipe = recipesForMealType[randomIndex];
-                              selectedRecipeName = randomRecipe.data().Name || 'Unnamed Recipe';
-                              selectedRecipeId = randomRecipe.id; // Store the ID
-                         }
-
-                         // Add the generated item to the data array
-                         generatedMenuData.push({
-                             date: dateString,
-                             meal: mealType,
-                             recipeName: selectedRecipeName,
-                             recipeId: selectedRecipeId // Store the selected recipe's ID
-                         });
-                     });
-                }
-            });
-
-            // Sort the generated menu data by date and then potentially by meal type (Breakfast, Lunch, Supper)
-            const mealOrder = ["Breakfast", "Lunch", "Dinner"]; // Define order for sorting
-            generatedMenuData.sort((a, b) => {
-                 const dateComparison = new Date(a.date) - new Date(b.date);
-                 if (dateComparison !== 0) {
-                     return dateComparison; // Sort by date first
-                 }
-                 // If dates are the same, sort by meal type order
-                 return mealOrder.indexOf(a.meal) - mealOrder.indexOf(b.meal);
-            });
-
-
-            // Save the generated menu data to Session Storage
-            try {
-                sessionStorage.setItem('generatedMenu', JSON.stringify(generatedMenuData));
-                // Navigate to the Generated Menu page
-                 window.location.href = 'GeneratedMenu.html';
-            } catch (e) {
-                 console.error("Error saving to Session Storage:", e);
-                 alert("Could not save menu data. Session Storage might be full or unavailable.");
-            }
-
-        });
 
 
         // --- Initialize Date Range Picker ---
@@ -448,30 +274,23 @@
                     "days": 7
                  },
                  // You can add more options here if needed, like 'locale' for language/format
-                 locale: {
-                      format: 'MM/DD/YYYY' // Match the desired output format
-                 }
             }, function(start, end, label) {
                  // This callback function runs when a date range is applied
-                 console.log("Date Range Picker callback fired: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-                 generateAndDisplayDayOptions(start, end); // Regenerate day options
+
+                 // Log the selected dates (for debugging)
+                 console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+
+                 // Generate and display the day options for the selected range
+                 generateAndDisplayDayOptions(start, end);
             });
 
-            // --- Initial Setup for Date Picker ---
+            // --- Initial Setup ---
             // Trigger the callback function once on page load
             // to populate the day options with the default range
              const picker = $('#date-range').data('daterangepicker');
              generateAndDisplayDayOptions(picker.startDate, picker.endDate);
 
         });
-
-
-        // --- Initial Setup: Fetch recipes and attach listeners ---
-         window.addEventListener('load', function() {
-              // Fetch recipes from Firestore when the entire page is loaded
-              fetchRecipes();
-               // Note: generateAndDisplayDayOptions is called by the Date Range Picker initial setup
-         });
 
 
     </script>
