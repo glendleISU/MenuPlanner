@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generated Menu</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -94,6 +98,13 @@
              background-color: #5a6268;
          }
 
+          #loading-message {
+               text-align: center;
+               margin-top: 20px;
+               font-style: italic;
+               color: #555;
+          }
+
     </style>
 </head>
 <body>
@@ -101,9 +112,8 @@
     <div class="container">
         <h1>Your Weekly Menu</h1>
 
-        <div id="generated-menu-output">
-            Loading menu...
-        </div>
+         <div id="loading-message">Loading recipes to generate menu...</div> <div id="generated-menu-output">
+            </div>
 
         <div class="button-container">
             <a href="index.html">Back to Home</a>
@@ -112,65 +122,155 @@
     </div>
 
     <script>
-        // --- JavaScript to parse URL parameters and display the menu ---
+         // --- Firebase Configuration ---
+         const firebaseConfig = {
+            apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
+            authDomain: "menuplanner-d991d.firebaseapp.com",
+            projectId: "menuplanner-d991d",
+            storageBucket: "menuplanner-d991d.firebasestorage.app",
+            messagingSenderId: "494188917249",
+            appId: "1:494188917249:web:59aa705a5f36e231a60600",
+            measurementId: "G-7MP3X52GQ7"
+         };
 
-        // Get reference to the output area
+         // Initialize Firebase
+         const app = firebase.initializeApp(firebaseConfig);
+
+         // Get a reference to the Firestore database
+         const db = firebase.firestore();
+
+         // Get a reference to the "Recipes" collection
+         const recipesCollection = db.collection('Recipes');
+
+
+        // --- JavaScript to parse URL parameters, fetch recipes, and display the menu ---
+
         const generatedMenuOutput = document.getElementById('generated-menu-output');
+        const loadingMessage = document.getElementById('loading-message');
 
-        // Use URLSearchParams to easily get parameters from the URL
-        const urlParams = new URLSearchParams(window.location.search);
 
-        // Object to hold the selected meals by date
-        const selectedMeals = {};
+        // Function to generate and display the menu
+        async function generateAndDisplayMenu() {
+            // Clear previous output
+            generatedMenuOutput.innerHTML = '';
+            loadingMessage.textContent = 'Loading recipes to generate menu...';
+            loadingMessage.style.display = 'block'; // Show loading message
 
-        // Iterate through all parameters
-        for (const [key, value] of urlParams) {
-            // Check if the parameter name starts with 'meals['
-            if (key.startsWith('meals[')) {
-                // Extract the date from the parameter name (e.g., 'meals[2025-05-15][]' -> '2025-05-15')
-                const dateMatch = key.match(/meals\[(.*?)\]/);
-                if (dateMatch && dateMatch[1]) {
-                    const date = dateMatch[1];
-                    const meal = value; // The value is the meal name (Breakfast, Lunch, Supper)
 
-                    // If the date isn't in our selectedMeals object yet, create an array for it
-                    if (!selectedMeals[date]) {
-                        selectedMeals[date] = [];
+            // 1. Parse URL parameters for selected meals
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedMealsByDate = {}; // Object to hold { 'YYYY-MM-DD': ['Breakfast', 'Lunch'], ... }
+
+            for (const [key, value] of urlParams) {
+                if (key.startsWith('meals[')) {
+                    const dateMatch = key.match(/meals\[(.*?)\]/);
+                    if (dateMatch && dateMatch[1]) {
+                        const date = dateMatch[1];
+                        const meal = value;
+
+                        if (!selectedMealsByDate[date]) {
+                            selectedMealsByDate[date] = [];
+                        }
+                        selectedMealsByDate[date].push(meal);
                     }
-                    // Add the meal to the array for that date
-                    selectedMeals[date].push(meal);
                 }
             }
-        }
 
-        // Clear the "Loading menu..." text
-        generatedMenuOutput.innerHTML = '';
+             const datesWithMeals = Object.keys(selectedMealsByDate);
 
-        // Check if any meals were selected
-        const datesWithMeals = Object.keys(selectedMeals);
-        if (datesWithMeals.length === 0) {
-            generatedMenuOutput.innerHTML = "<p>No meals were selected for the menu.</p>";
-        } else {
+             if (datesWithMeals.length === 0) {
+                 loadingMessage.style.display = 'none'; // Hide loading
+                 generatedMenuOutput.innerHTML = "<p>No meals were selected for the menu.</p>";
+                 return;
+             }
+
+
+            // 2. Fetch all recipes from Firestore
+            let allRecipes = [];
+            try {
+                const snapshot = await recipesCollection.get();
+                allRecipes = snapshot.docs; // Array of document snapshots
+
+                loadingMessage.style.display = 'none'; // Hide loading message
+
+            } catch (error) {
+                console.error("Error fetching recipes for menu generation:", error);
+                loadingMessage.textContent = 'Error loading recipes for menu generation.';
+                return; // Stop generation if recipes fail to load
+            }
+
+
+            // 3. Generate the menu with random recipe selection
+            const generatedMenuData = [];
+
             // Sort dates chronologically
             datesWithMeals.sort((a, b) => new Date(a) - new Date(b));
 
-            // Generate and display the output lines
+            // Define meal order for sorting output
+            const mealOrder = ["Breakfast", "Lunch", "Dinner"];
+
             datesWithMeals.forEach(dateString => {
-                // Format the date to M/D
-                const [year, month, day] = dateString.split('-');
-                const formattedDate = `${parseInt(month, 10)}/${parseInt(day, 10)}`; // Convert to integer to remove leading zeros
+                 // Sort meals for the current day
+                 selectedMealsByDate[dateString].sort((a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
 
-                // Sort meals in a standard order (optional, but nice)
-                const mealOrder = ["Breakfast", "Lunch", "Supper"];
-                selectedMeals[dateString].sort((a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
+                 selectedMealsByDate[dateString].forEach(mealType => {
+                     // Find recipes that match this meal type
+                     const recipesForMealType = allRecipes.filter(recipeDoc => {
+                          const recipeData = recipeDoc.data();
+                          // Check if the recipe's Meal field (array or string) includes the mealType
+                          if (recipeData.Meal) {
+                              if (Array.isArray(recipeData.Meal)) {
+                                   return recipeData.Meal.includes(mealType);
+                              } else if (typeof recipeData.Meal === 'string') {
+                                   return recipeData.Meal === mealType;
+                              }
+                          }
+                          return false; // No valid Meal field or doesn't match
+                     });
 
-                selectedMeals[dateString].forEach(meal => {
-                    const p = document.createElement('p');
-                    p.textContent = `${formattedDate} - ${meal}`;
-                    generatedMenuOutput.appendChild(p);
-                });
+                     let selectedRecipeName = 'No recipe found for this meal type';
+                     let selectedRecipeId = null; // Optional: store recipe ID
+
+                     if (recipesForMealType.length > 0) {
+                          // Randomly select one recipe
+                          const randomIndex = Math.floor(Math.random() * recipesForMealType.length);
+                          const randomRecipe = recipesForMealType[randomIndex];
+                          selectedRecipeName = randomRecipe.data().Name || 'Unnamed Recipe';
+                          selectedRecipeId = randomRecipe.id;
+                     }
+
+                     // Add the generated item to the data array
+                     generatedMenuData.push({
+                         date: dateString,
+                         meal: mealType,
+                         recipeName: selectedRecipeName,
+                         recipeId: selectedRecipeId
+                     });
+                 });
             });
+
+
+            // 4. Display the generated menu
+            generatedMenuData.forEach(item => {
+                 // Format the date from YYYY-MM-DD to M/D
+                 const dateObj = new Date(item.date);
+                 const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+
+                 const p = document.createElement('p');
+                 // Display Date - Meal - Recipe Name
+                 p.textContent = `${formattedDate} - ${item.meal} - ${item.recipeName}`;
+                 generatedMenuOutput.appendChild(p);
+            });
+
+             // Clear the initial loading message once generation is complete
+             loadingMessage.style.display = 'none';
         }
+
+        // --- Initial Setup ---
+
+        // Run the function to generate and display the menu when the page loads
+        generateAndDisplayMenu();
+
 
     </script>
 
