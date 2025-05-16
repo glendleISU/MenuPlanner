@@ -533,20 +533,33 @@
              }
         });
 
-        // Add click listener to the "Edit Recipe" button (Placeholder for now)
+        // Add click listener to the "Edit Recipe" button
          editRecipeButton.addEventListener('click', function(event) {
-             event.preventDefault();
-              // Logic to get selected recipe ID and navigate to edit page will go here
-             console.log("Edit Recipe button clicked.");
-              // Example: Get selected item ID
+             event.preventDefault(); // Prevent the default link behavior (#)
+
+              // Find the currently selected recipe list item
              const selectedItem = recipeListContainer.querySelector('.recipe-list-item.selected');
-              if (selectedItem) {
+
+              // Clear any previously displayed details or messages
+             recipeDetailsContainer.innerHTML = '';
+             recipeDetailsContainer.style.display = 'none';
+
+
+             if (selectedItem) {
                   const recipeId = selectedItem.dataset.id;
-                   console.log("Selected recipe ID for editing:", recipeId);
-                   // TODO: Navigate to edit page, passing recipeId
-                   // window.location.href = `Recipes-Create.html?id=${recipeId}`; // Example
+                   if (recipeId) {
+                       console.log("Selected recipe ID for editing:", recipeId);
+                       // Navigate to Recipes-Create.html, passing the recipeId as a URL parameter
+                       window.location.href = `Recipes-Create.html?id=${recipeId}`;
+                   } else {
+                       console.warn("No recipe ID found for the selected item.");
+                       recipeDetailsContainer.innerHTML = '<p>Could not retrieve recipe details for editing.</p>';
+                       recipeDetailsContainer.style.display = 'block'; // Show message area
+                   }
               } else {
-                   alert("Please select a recipe to edit.");
+                   // If no item is selected, display an error message in the details area
+                   recipeDetailsContainer.innerHTML = '<p>Please select a recipe from the list to edit.</p>';
+                   recipeDetailsContainer.style.display = 'block'; // Make details area visible
               }
          });
 
