@@ -226,81 +226,27 @@
         const recipesCollection = db.collection('Recipes');
 
 
-        // --- JavaScript for Form Submission ---
+        // --- Global variable to store the ID if we are in edit mode ---
+        let editingRecipeId = null;
 
+        // --- Get references to form elements and status message area ---
         const createRecipeForm = document.getElementById('create-recipe-form');
         const statusMessageDiv = document.getElementById('status-message');
+        const pageTitle = document.querySelector('h1'); // Get the page title
+        const submitButton = createRecipeForm.querySelector('button[type="submit"]'); // Get the submit button
 
-        createRecipeForm.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // --- Get Form Values ---
-            const name = document.getElementById('recipe-name').value.trim();
-            const servings = parseInt(document.getElementById('servings').value, 10); // Parse as integer
-            const prepTime = document.getElementById('prep-time').value.trim();
-            const cookTime = document.getElementById('cook-time').value.trim();
-            const directions = document.getElementById('directions').value.trim();
-
-            // Ingredients (split by new line, filter out empty lines)
-            const ingredientsText = document.getElementById('ingredients').value.trim();
-            const ingredients = ingredientsText ? ingredientsText.split('\n').map(item => item.trim()).filter(item => item !== '') : [];
-
-            // Tags (split by comma, trim whitespace, filter out empty tags)
-            const tagsText = document.getElementById('tags').value.trim();
-            const tags = tagsText ? tagsText.split(',').map(item => item.trim()).filter(item => item !== '') : [];
-
-            // Meal (get values from checked checkboxes)
-            const mealCheckboxes = document.querySelectorAll('input[name="meal[]"]:checked');
-            const meal = Array.from(mealCheckboxes).map(checkbox => checkbox.value); // Create an array of checked values
+        // Get references to all input fields by their IDs
+        const nameInput = document.getElementById('recipe-name');
+        const servingsInput = document.getElementById('servings');
+        const prepTimeInput = document.getElementById('prep-time');
+        const cookTimeInput = document.getElementById('cook-time');
+        const ingredientsTextarea = document.getElementById('ingredients');
+        const tagsInput = document.getElementById('tags');
+        const directionsTextarea = document.getElementById('directions');
+        const mealCheckboxes = document.querySelectorAll('input[name="meal[]"]');
 
 
-            // --- Basic Validation (Optional, but good practice) ---
-            if (!name || isNaN(servings) || servings <= 0 || !ingredients.length || !directions) {
-                 displayStatusMessage('Please fill in all required fields (Name, Servings, Ingredients, Directions).', 'error');
-                 return; // Stop the submission process
-            }
-
-
-            // --- Prepare Data for Firestore ---
-            const newRecipeData = {
-                Name: name, // Use 'Name' as per your Firestore field
-                'Number of Servings': servings, // Use bracket notation for field name with space
-                'Prep. Time': prepTime, // Use bracket notation
-                'Cook Time': cookTime, // Use bracket notation
-                Ingredients: ingredients, // Array of strings
-                Tags: tags, // Array of strings
-                Meal: meal, // Array of selected meals
-                Directions: directions, // String
-                 // You could add a timestamp here: createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            // --- Add Data to Firestore ---
-            try {
-                // Display a saving message
-                 displayStatusMessage('Saving recipe...', 'info'); // 'info' class not defined, will just use default
-
-                const docRef = await recipesCollection.add(newRecipeData); // Add the document
-
-                console.log("Document written with ID: ", docRef.id);
-
-                // Display success message
-                displayStatusMessage('Recipe saved successfully!', 'success');
-
-                // Optional: Clear the form after successful submission
-                createRecipeForm.reset();
-                // Also clear ingredients and tags text areas if reset doesn't handle them fully
-                document.getElementById('ingredients').value = '';
-                document.getElementById('tags').value = '';
-
-
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                displayStatusMessage(`Error saving recipe: ${error.message}`, 'error'); // Display the error message
-                 // Note: For permission errors, you might not get a detailed message in the browser
-            }
-        });
-
-        // Function to display status messages
+        // Function to display status messages (remains the same)
         function displayStatusMessage(message, type) {
             statusMessageDiv.textContent = message;
             statusMessageDiv.className = ''; // Clear existing classes
@@ -313,10 +259,179 @@
             // }, 5000); // Hide after 5 seconds
         }
 
-         // Note: For security, in a real-world app, you would likely want to perform validation
-         // and Firestore write operations from a trusted environment (your backend server)
-         // rather than directly from the client-side JavaScript. This requires setting up
-         // Firebase Authentication and more complex Security Rules.
+        // Function to populate the form with recipe data
+        function populateForm(recipeData) {
+            nameInput.value = recipeData.Name || '';
+            servingsInput.value = recipeData['Number of Servings'] || '';
+            prepTimeInput.value = recipeData['Prep. Time'] || '';
+            cookTimeInput.value = recipeData['Cook Time'] || '';
+            directionsTextarea.value = recipeData.Directions || '';
+
+            // Populate Ingredients (join array with newlines)
+            if (recipeData.Ingredients && Array.isArray(recipeData.Ingredients)) {
+                ingredientsTextarea.value = recipeData.Ingredients.join('\n');
+            } else if (recipeData.Ingredients) {
+                 ingredientsTextarea.value = recipeData.Ingredients; // Handle if it's just a string
+            } else {
+                 ingredientsTextarea.value = '';
+            }
+
+
+            // Populate Tags (join array with commas)
+            if (recipeData.Tags && Array.isArray(recipeData.Tags)) {
+                tagsInput.value = recipeData.Tags.join(', ');
+            } else if (recipeData.Tags) {
+                 tagsInput.value = recipeData.Tags; // Handle if it's just a string
+            } else {
+                 tagsInput.value = '';
+            }
+
+
+            // Populate Meal checkboxes
+            if (recipeData.Meal && Array.isArray(recipeData.Meal)) {
+                 mealCheckboxes.forEach(checkbox => {
+                      // Check the box if its value is in the recipe's Meal array
+                     checkbox.checked = recipeData.Meal.includes(checkbox.value);
+                 });
+            } else if (recipeData.Meal && typeof recipeData.Meal === 'string') {
+                 // Handle if Meal is a single string (check the box that matches the string)
+                 mealCheckboxes.forEach(checkbox => {
+                     checkbox.checked = (checkbox.value === recipeData.Meal);
+                 });
+            } else {
+                // If Meal is missing or not an array/string, uncheck all
+                 mealCheckboxes.forEach(checkbox => {
+                     checkbox.checked = false;
+                 });
+            }
+        }
+
+        // Function to fetch a recipe by ID for editing
+        async function fetchRecipeForEditing(recipeId) {
+            try {
+                 displayStatusMessage('Loading recipe for editing...', 'info');
+
+                const doc = await recipesCollection.doc(recipeId).get();
+
+                if (!doc.exists) {
+                    displayStatusMessage('Recipe not found for editing.', 'error');
+                    console.error("Recipe document not found with ID:", recipeId);
+                    return; // Stop the process
+                }
+
+                const recipeData = doc.data();
+                populateForm(recipeData); // Fill the form
+
+                displayStatusMessage('Recipe loaded for editing.', 'success');
+
+
+            } catch (error) {
+                console.error("Error fetching recipe for editing:", error);
+                 displayStatusMessage(`Error loading recipe for editing: ${error.message}`, 'error');
+            }
+        }
+
+
+        // --- Form Submission Handler (handles both Create and Update) ---
+        createRecipeForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // --- Get Form Values ---
+            const name = document.getElementById('recipe-name').value.trim();
+            const servings = parseInt(document.getElementById('servings').value, 10);
+            const prepTime = document.getElementById('prep-time').value.trim();
+            const cookTime = document.getElementById('cook-time').value.trim();
+            const directions = document.getElementById('directions').value.trim();
+
+            const ingredientsText = document.getElementById('ingredients').value.trim();
+            const ingredients = ingredientsText ? ingredientsText.split('\n').map(item => item.trim()).filter(item => item !== '') : [];
+
+            const tagsText = document.getElementById('tags').value.trim();
+            const tags = tagsText ? tagsText.split(',').map(item => item.trim()).filter(item => item !== '') : [];
+
+            const mealCheckboxes = document.querySelectorAll('input[name="meal[]"]:checked');
+            const meal = Array.from(mealCheckboxes).map(checkbox => checkbox.value);
+
+
+            // --- Basic Validation ---
+            if (!name || isNaN(servings) || servings <= 0 || !ingredients.length || !directions) {
+                 displayStatusMessage('Please fill in all required fields (Name, Servings, Ingredients, Directions).', 'error');
+                 return;
+            }
+
+            // --- Prepare Data for Firestore ---
+            const recipeDataToSave = { // Use a new variable name
+                Name: name,
+                'Number of Servings': servings,
+                'Prep. Time': prepTime,
+                'Cook Time': cookTime,
+                Ingredients: ingredients,
+                Tags: tags,
+                Meal: meal,
+                Directions: directions,
+                 // You might update a timestamp here for edited recipes
+                 // updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+
+            // --- Save or Update Data in Firestore ---
+            try {
+                 if (editingRecipeId) {
+                     // --- Update Existing Document ---
+                     displayStatusMessage('Updating recipe...', 'info');
+                     // Use set() with merge: true if you only want to update specific fields
+                     // or set() without merge: true to overwrite the entire document
+                     // Using set() to overwrite the document with the new form data is simpler for this case.
+                     await recipesCollection.doc(editingRecipeId).set(recipeDataToSave);
+                     console.log("Document updated with ID: ", editingRecipeId);
+                     displayStatusMessage('Recipe updated successfully!', 'success');
+
+                     // Optional: Navigate back to view page after update
+                     // setTimeout(() => {
+                     //      window.location.href = 'Recipes-View.html';
+                     // }, 2000); // Wait 2 seconds before navigating
+
+
+                 } else {
+                     // --- Add New Document (Original Create Logic) ---
+                     displayStatusMessage('Saving recipe...', 'info');
+                     const docRef = await recipesCollection.add(recipeDataToSave);
+                     console.log("Document written with ID: ", docRef.id);
+                     displayStatusMessage('Recipe saved successfully!', 'success');
+
+                     // Optional: Clear the form after successful creation
+                     createRecipeForm.reset();
+                     document.getElementById('ingredients').value = '';
+                     document.getElementById('tags').value = '';
+                 }
+
+
+            } catch (error) {
+                console.error("Error saving/updating document: ", error);
+                displayStatusMessage(`Error saving/updating recipe: ${error.message}`, 'error');
+            }
+        });
+
+
+        // --- Initial Setup: Check for recipe ID in URL on page load ---
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const recipeIdFromUrl = urlParams.get('id'); // Get the 'id' parameter from the URL
+
+            if (recipeIdFromUrl) {
+                editingRecipeId = recipeIdFromUrl; // Store the ID
+                pageTitle.textContent = 'Edit Recipe'; // Change the page title
+                submitButton.textContent = 'Update Recipe'; // Change the button text
+
+                fetchRecipeForEditing(editingRecipeId); // Fetch and populate the form
+            } else {
+                 // If no ID in the URL, we are in create mode
+                 pageTitle.textContent = 'Create New Recipe';
+                 submitButton.textContent = 'Save Recipe';
+                 console.log("In Create mode.");
+                 // No need to fetch or populate, form is empty by default
+            }
+        });
 
     </script>
 
