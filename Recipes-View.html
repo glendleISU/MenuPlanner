@@ -63,37 +63,60 @@
             font-size: 1rem;
         }
 
+        /* --- Filter Sections --- */
+        .filter-group {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .filter-group h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .filter-checkboxes label {
+             display: inline-block; /* Arrange checkboxes horizontally */
+             margin-right: 15px;
+             font-weight: normal;
+             margin-bottom: 5px; /* Space below labels if they wrap */
+        }
+
+        .filter-checkboxes label:last-child {
+             margin-right: 0;
+        }
+
         /* --- Scrollable List Area --- */
         #recipe-list-container {
             border: 1px solid #ccc;
             border-radius: 4px;
-            max-height: 300px; /* Set a max height to enable scrolling */
-            overflow-y: auto; /* Add vertical scrollbar when content exceeds max-height */
+            max-height: 300px;
+            overflow-y: auto;
             padding: 10px;
-            margin-bottom: 20px; /* Space below the list */
-            background-color: #fff; /* White background for the list */
-            /* Initially empty, will be populated by JavaScript */
+            margin-bottom: 20px;
+            background-color: #fff;
         }
 
         /* Style for individual items in the list */
         .recipe-list-item {
             padding: 10px;
             border-bottom: 1px solid #eee;
-            cursor: pointer; /* Indicate items are selectable */
+            cursor: pointer;
             transition: background-color 0.2s ease;
         }
 
         .recipe-list-item:last-child {
-            border-bottom: none; /* No border on the last item */
+            border-bottom: none;
         }
 
         .recipe-list-item:hover {
-            background-color: #f0f0f0; /* Highlight on hover */
+            background-color: #f0f0f0;
         }
 
         /* Style for a selected item */
         .recipe-list-item.selected {
-            background-color: #cfe2ff; /* Highlight selected item */
+            background-color: #cfe2ff;
             font-weight: bold;
         }
 
@@ -103,7 +126,7 @@
              padding: 20px;
              border: 1px solid #ccc;
              border-radius: 8px;
-             background-color: #f9f9f9; /* Light grey background for details */
+             background-color: #f9f9f9;
              display: none; /* Initially hidden */
         }
 
@@ -120,13 +143,13 @@
          }
 
          #recipe-details-container strong {
-             display: inline-block; /* Make labels bold and on the same line */
-             width: 120px; /* Give labels a fixed width for alignment */
+             display: inline-block;
+             width: 120px;
              margin-right: 10px;
          }
 
          #recipe-details-container ul {
-             padding-left: 20px; /* Indent the ingredient list */
+             padding-left: 20px;
              margin-top: 5px;
              margin-bottom: 10px;
          }
@@ -142,13 +165,13 @@
           }
 
 
-        /* --- Button Styling (Copied from index.html/recipes.html) --- */
+        /* --- Button Styling --- */
         .button-container {
             display: flex;
             justify-content: space-around;
             gap: 15px;
             flex-wrap: wrap;
-            margin-top: 20px; /* Space above buttons */
+            margin-top: 20px;
         }
 
         .button-container a {
@@ -184,21 +207,34 @@
             <input type="text" id="search-recipes" placeholder="Enter recipe name">
         </div>
 
+        <div class="filter-group">
+            <h3>Filter by Meal:</h3>
+            <div id="meal-filter-checkboxes" class="filter-checkboxes">
+                 </div>
+        </div>
+
+        <div class="filter-group">
+            <h3>Filter by Tags:</h3>
+            <div id="tag-filter-checkboxes" class="filter-checkboxes">
+                </div>
+        </div>
+
+
         <div id="recipe-list-container">
-            <p>Loading recipes...</p> </div>
+            <p>Loading recipes...</p>
+        </div>
 
         <div id="recipe-details-container">
              </div>
 
 
         <div class="button-container">
-            <a href="#" id="view-recipe-button">View Recipe</a> <a href=# id="edit-recipe-button">Edit Recipe</a> <a href="index.html">Back to Home</a>
+            <a href="#" id="view-recipe-button">View Recipe</a>
+             <a href="#" id="edit-recipe-button">Edit Recipe</a> <a href="index.html">Back to Home</a>
         </div>
     </div>
 
     <script>
-        console.log("Recipes-View.html script is running")
-        
         // --- Firebase Configuration ---
         const firebaseConfig = {
             apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
@@ -220,51 +256,57 @@
         const recipesCollection = db.collection('Recipes');
 
 
+        // --- Global variable to store all fetched recipes ---
+        let allRecipes = [];
+
+
         // --- JavaScript for interactivity and displaying recipes ---
 
         const searchInput = document.getElementById('search-recipes');
         const recipeListContainer = document.getElementById('recipe-list-container');
-        const recipeDetailsContainer = document.getElementById('recipe-details-container'); // Get the new details container
-        const viewRecipeButton = document.getElementById('view-recipe-button'); // Get the View Recipe button
+        const recipeDetailsContainer = document.getElementById('recipe-details-container');
+        const viewRecipeButton = document.getElementById('view-recipe-button');
+        const editRecipeButton = document.getElementById('edit-recipe-button'); // Get the Edit button
+
+        const mealFilterCheckboxesContainer = document.getElementById('meal-filter-checkboxes');
+        const tagFilterCheckboxesContainer = document.getElementById('tag-filter-checkboxes');
 
 
-        // Function to display recipes in the list
-        function displayRecipes(recipes) {
+        // Function to display recipes in the list (now displays based on a filtered list)
+        function displayRecipes(recipesToDisplay) {
             // Clear current list content
             recipeListContainer.innerHTML = '';
 
-            if (recipes.length === 0) {
-                recipeListContainer.innerHTML = '<p>No recipes found.</p>';
+            if (recipesToDisplay.length === 0) {
+                recipeListContainer.innerHTML = '<p>No recipes found matching your criteria.</p>';
+                // Hide details container if no recipes are displayed
+                 recipeDetailsContainer.style.display = 'none';
                 return;
             }
 
-            recipes.forEach(recipe => {
+            recipesToDisplay.forEach(recipeDoc => { // Use recipeDoc to avoid confusion with recipeData
                 const recipeItemDiv = document.createElement('div');
                 recipeItemDiv.classList.add('recipe-list-item');
                 // Store the Firestore document ID on the element
-                recipeItemDiv.dataset.id = recipe.id;
+                recipeItemDiv.dataset.id = recipeDoc.id;
                 // Display the recipe name - Using 'Name' as per your Firestore field
-                recipeItemDiv.textContent = recipe.data().Name || 'Unnamed Recipe'; // Use 'Name' here
+                recipeItemDiv.textContent = recipeDoc.data().Name || 'Unnamed Recipe';
 
                 recipeListContainer.appendChild(recipeItemDiv);
             });
 
-             // The click listener is attached to the container once, handled in initial setup
+            // The click listener is attached to the container once, handled in initial setup
         }
 
         // Function to attach click listeners to list items (using event delegation)
         function attachListItemListeners() {
-             // Attach a single click listener to the container
              recipeListContainer.addEventListener('click', function(event) {
-                 // Check if the clicked element or its parent is a recipe list item
                  const clickedItem = event.target.closest('.recipe-list-item');
 
                  if (clickedItem) {
-                     // Remove 'selected' class from all items
                      recipeListContainer.querySelectorAll('.recipe-list-item').forEach(item => {
                          item.classList.remove('selected');
                      });
-                     // Add 'selected' class to the clicked item
                      clickedItem.classList.add('selected');
 
                      // console.log("Recipe selected:", clickedItem.textContent, "ID:", clickedItem.dataset.id);
@@ -272,14 +314,13 @@
              });
         }
 
-        // Function to fetch and display a single recipe's details
+        // Function to fetch and display a single recipe's details (remains the same)
         async function displayRecipeDetails(recipeId) {
              try {
-                 // Display a loading message in the details container
                  recipeDetailsContainer.innerHTML = '<p>Loading recipe details...</p>';
-                 recipeDetailsContainer.style.display = 'block'; // Make details area visible
+                 recipeDetailsContainer.style.display = 'block';
 
-                 const doc = await recipesCollection.doc(recipeId).get(); // Fetch the specific document
+                 const doc = await recipesCollection.doc(recipeId).get();
 
                  if (!doc.exists) {
                      recipeDetailsContainer.innerHTML = '<p>Recipe not found.</p>';
@@ -292,33 +333,36 @@
                  let detailsHtml = `<h2>${recipeData.Name || 'Unnamed Recipe'}</h2>`;
 
                  detailsHtml += `<p><strong>Servings:</strong> ${recipeData['Number of Servings'] || 'N/A'}</p>`;
-                 detailsHtml += `<p><strong>Prep Time:</strong> ${recipeData['Prep. Time'] || 'N/A'}</p>`; // Use bracket notation for field names with spaces/dots
-                 detailsHtml += `<p><strong>Cook Time:</strong> ${recipeData['Cook Time'] || 'N/A'}</p>`; // Use bracket notation
+                 detailsHtml += `<p><strong>Prep Time:</strong> ${recipeData['Prep. Time'] || 'N/A'}</p>`;
+                 detailsHtml += `<p><strong>Cook Time:</strong> ${recipeData['Cook Time'] || 'N/A'}</p>`;
 
-                 // Display Tags if they exist and are an array
+                 if (recipeData.Meal && Array.isArray(recipeData.Meal) && recipeData.Meal.length > 0) {
+                     detailsHtml += `<p><strong>Meal(s):</strong> ${recipeData.Meal.join(', ')}</p>`;
+                 } else if (recipeData.Meal) {
+                     detailsHtml += `<p><strong>Meal(s):</strong> ${recipeData.Meal}</p>`;
+                 }
+
+
                  if (recipeData.Tags && Array.isArray(recipeData.Tags) && recipeData.Tags.length > 0) {
                      detailsHtml += `<p><strong>Tags:</strong> ${recipeData.Tags.join(', ')}</p>`;
-                 } else if (recipeData.Tags) { // Handle if Tags is a string or other non-array
+                 } else if (recipeData.Tags) {
                      detailsHtml += `<p><strong>Tags:</strong> ${recipeData.Tags}</p>`;
                  }
 
 
-                 // Display Ingredients if they exist and are an array
                  if (recipeData.Ingredients && Array.isArray(recipeData.Ingredients) && recipeData.Ingredients.length > 0) {
                      detailsHtml += `<p><strong>Ingredients:</strong></p><ul>`;
                      recipeData.Ingredients.forEach(ingredient => {
                          detailsHtml += `<li>${ingredient}</li>`;
                      });
                      detailsHtml += `</ul>`;
-                 } else if (recipeData.Ingredients) { // Handle if Ingredients is a string or other non-array
+                 } else if (recipeData.Ingredients) {
                       detailsHtml += `<p><strong>Ingredients:</strong> ${recipeData.Ingredients}</p>`;
                  }
 
 
-                 // Display Directions
                  detailsHtml += `<div class="directions"><p><strong>Directions:</strong></p><p>${recipeData.Directions || 'No directions provided'}</p></div>`;
 
-                 // Update the details container with the generated HTML
                  recipeDetailsContainer.innerHTML = detailsHtml;
 
 
@@ -329,67 +373,182 @@
         }
 
 
-        // Function to fetch recipes from Firestore (remains the same)
+        // Function to populate meal and tag filters
+        function populateFilters(recipes) {
+            const uniqueMeals = new Set();
+            const uniqueTags = new Set();
+
+            recipes.forEach(recipeDoc => {
+                const recipeData = recipeDoc.data();
+                // Collect unique Meals (assuming Meal is an array or single value)
+                if (recipeData.Meal) {
+                    if (Array.isArray(recipeData.Meal)) {
+                        recipeData.Meal.forEach(meal => uniqueMeals.add(meal.trim()));
+                    } else if (typeof recipeData.Meal === 'string') {
+                         uniqueMeals.add(recipeData.Meal.trim());
+                    }
+                }
+
+                // Collect unique Tags (assuming Tags is an array or comma-separated string)
+                 if (recipeData.Tags) {
+                     if (Array.isArray(recipeData.Tags)) {
+                         recipeData.Tags.forEach(tag => uniqueTags.add(tag.trim()));
+                     } else if (typeof recipeData.Tags === 'string') {
+                         // Split comma-separated string if it's a string
+                          recipeData.Tags.split(',').forEach(tag => uniqueTags.add(tag.trim()));
+                     }
+                 }
+            });
+
+            // Generate Meal checkboxes
+            mealFilterCheckboxesContainer.innerHTML = ''; // Clear previous
+            const sortedMeals = Array.from(uniqueMeals).sort(); // Sort alphabetically
+            sortedMeals.forEach(meal => {
+                 if (meal) { // Avoid creating checkbox for empty string
+                     const checkboxHtml = `<label><input type="checkbox" name="mealFilter" value="${meal}" class="filter-checkbox"> ${meal}</label>`;
+                     mealFilterCheckboxesContainer.innerHTML += checkboxHtml;
+                 }
+            });
+
+            // Generate Tag checkboxes
+            tagFilterCheckboxesContainer.innerHTML = ''; // Clear previous
+            const sortedTags = Array.from(uniqueTags).sort(); // Sort alphabetically
+            sortedTags.forEach(tag => {
+                if (tag) { // Avoid creating checkbox for empty string
+                    const checkboxHtml = `<label><input type="checkbox" name="tagFilter" value="${tag}" class="filter-checkbox"> ${tag}</label>`;
+                    tagFilterCheckboxesContainer.innerHTML += checkboxHtml;
+                }
+            });
+
+             // Attach event listeners to the filter containers (using delegation)
+             attachFilterListeners();
+        }
+
+        // Function to apply filters and search term
+        function applyFiltersAndSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            // Get selected Meal filters
+            const selectedMeals = Array.from(mealFilterCheckboxesContainer.querySelectorAll('input[name="mealFilter"]:checked'))
+                                     .map(checkbox => checkbox.value.toLowerCase());
+
+            // Get selected Tag filters
+            const selectedTags = Array.from(tagFilterCheckboxesContainer.querySelectorAll('input[name="tagFilter"]:checked'))
+                                   .map(checkbox => checkbox.value.toLowerCase());
+
+            // Filter the allRecipes array
+            const filteredRecipes = allRecipes.filter(recipeDoc => {
+                const recipeData = recipeDoc.data();
+                const recipeName = recipeData.Name ? recipeData.Name.toLowerCase() : ''; // Handle missing name
+
+                // --- Search Filter ---
+                const matchesSearch = searchTerm === '' || recipeName.includes(searchTerm);
+
+                // --- Meal Filter ---
+                let matchesMeal = true; // Assume match if no meal filters are selected
+                if (selectedMeals.length > 0) {
+                    matchesMeal = false; // Must match at least one selected meal if filters are active
+                     if (recipeData.Meal) {
+                          if (Array.isArray(recipeData.Meal)) {
+                              matchesMeal = recipeData.Meal.some(meal => selectedMeals.includes(meal.toLowerCase()));
+                          } else if (typeof recipeData.Meal === 'string') {
+                               matchesMeal = selectedMeals.includes(recipeData.Meal.toLowerCase());
+                          }
+                     }
+                }
+
+                // --- Tag Filter ---
+                let matchesTag = true; // Assume match if no tag filters are selected
+                 if (selectedTags.length > 0) {
+                     matchesTag = false; // Must match at least one selected tag if filters are active
+                     if (recipeData.Tags) {
+                         if (Array.isArray(recipeData.Tags)) {
+                             matchesTag = recipeData.Tags.some(tag => selectedTags.includes(tag.toLowerCase()));
+                         } else if (typeof recipeData.Tags === 'string') {
+                              // Check if any selected tag is present in the comma-separated string
+                              matchesTag = selectedTags.some(selectedTag => recipeData.Tags.toLowerCase().split(',').map(t => t.trim()).includes(selectedTag));
+                         }
+                     }
+                 }
+
+
+                // A recipe matches if it passes all active filters
+                return matchesSearch && matchesMeal && matchesTag;
+            });
+
+            // Display the filtered recipes
+            displayRecipes(filteredRecipes);
+        }
+
+        // Function to attach event listeners to filter checkboxes (using delegation)
+        function attachFilterListeners() {
+             mealFilterCheckboxesContainer.addEventListener('change', applyFiltersAndSearch);
+             tagFilterCheckboxesContainer.addEventListener('change', applyFiltersAndSearch);
+        }
+
+
+        // Function to fetch recipes from Firestore (modified to store in allRecipes)
         async function fetchRecipes() {
-             console.log("fetchRecipes called"); // <-- Check if this appears
-             try {
-                 // The loading message is already in the HTML initially
-                 console.log("Attempting to get documents from 'Recipes' collection"); // <-- Check if this appears
+            try {
+                recipeListContainer.innerHTML = '<p>Loading recipes...</p>';
 
-                 const snapshot = await recipesCollection.get(); // <--- This is the line we suspect might be hanging
+                const snapshot = await recipesCollection.get();
+                allRecipes = snapshot.docs; // Store all fetched documents
 
-                 console.log("Successfully got snapshot"); // <-- Check if this appears
-                 console.log("Number of documents:", snapshot.docs.length); // <-- Check the number
+                // Populate filters based on all fetched recipes
+                populateFilters(allRecipes);
 
-                 const recipes = snapshot.docs;
+                // Display all recipes initially
+                applyFiltersAndSearch(); // Apply initial filters (none selected) and empty search
 
-                 displayRecipes(recipes);
-
-             } catch (error) {
-                 console.error("Error fetching recipes:", error); // <-- Check if an error is logged here
-                 recipeListContainer.innerHTML = '<p>Error loading recipes.</p>';
-             }
-         }
+            } catch (error) {
+                console.error("Error fetching recipes:", error);
+                recipeListContainer.innerHTML = '<p>Error loading recipes.</p>';
+            }
+        }
 
         // --- Event Listeners ---
 
-        // Basic search functionality (remains the same)
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const recipeItems = recipeListContainer.querySelectorAll('.recipe-list-item');
-
-            recipeItems.forEach(item => {
-                const recipeName = item.textContent.toLowerCase(); // This still works as textContent is the displayed name
-                if (recipeName.includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
+        // Add event listener to the search input
+        searchInput.addEventListener('input', applyFiltersAndSearch);
 
         // Add click listener to the "View Recipe" button
         viewRecipeButton.addEventListener('click', function(event) {
-             event.preventDefault(); // Prevent the default link behavior (#)
+             event.preventDefault();
 
-             // Find the currently selected recipe list item
              const selectedItem = recipeListContainer.querySelector('.recipe-list-item.selected');
 
              if (selectedItem) {
-                 const recipeId = selectedItem.dataset.id; // Get the Firestore document ID
+                 const recipeId = selectedItem.dataset.id;
                  if (recipeId) {
-                     displayRecipeDetails(recipeId); // Fetch and display details
+                     displayRecipeDetails(recipeId);
                  } else {
                       console.warn("No recipe ID found for the selected item.");
                       recipeDetailsContainer.innerHTML = '<p>Could not retrieve recipe details.</p>';
                        recipeDetailsContainer.style.display = 'block';
                  }
              } else {
-                 // If no item is selected, display a message
                  recipeDetailsContainer.innerHTML = '<p>Please select a recipe from the list to view its details.</p>';
-                 recipeDetailsContainer.style.display = 'block'; // Make details area visible
+                 recipeDetailsContainer.style.display = 'block';
              }
         });
+
+        // Add click listener to the "Edit Recipe" button (Placeholder for now)
+         editRecipeButton.addEventListener('click', function(event) {
+             event.preventDefault();
+              // Logic to get selected recipe ID and navigate to edit page will go here
+             console.log("Edit Recipe button clicked.");
+              // Example: Get selected item ID
+             const selectedItem = recipeListContainer.querySelector('.recipe-list-item.selected');
+              if (selectedItem) {
+                  const recipeId = selectedItem.dataset.id;
+                   console.log("Selected recipe ID for editing:", recipeId);
+                   // TODO: Navigate to edit page, passing recipeId
+                   // window.location.href = `Recipes-Create.html?id=${recipeId}`; // Example
+              } else {
+                   alert("Please select a recipe to edit.");
+              }
+         });
 
 
         // --- Initial Setup ---
@@ -400,6 +559,7 @@
         // Attach the single click listener to the container once for list item selection
         attachListItemListeners();
 
+        // The filter listeners are now attached within populateFilters
 
     </script>
 
