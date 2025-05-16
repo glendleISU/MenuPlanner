@@ -49,32 +49,59 @@
             min-height: 100px; /* Ensure some space even if empty */
         }
 
-        #generated-menu-output p {
-            margin-bottom: 8px; /* Space between menu lines */
+        /* Style for each generated menu line (now a flex container) */
+        .menu-item-line {
+            display: flex; /* Use flexbox */
+            justify-content: space-between; /* Space out content and checkbox */
+            align-items: center; /* Vertically align items */
+            margin-bottom: 8px;
             padding-bottom: 5px;
-            border-bottom: 1px dashed #ccc; /* Optional: dashed line separator */
+            border-bottom: 1px dashed #ccc;
+            flex-wrap: wrap; /* Allow items to wrap on small screens */
         }
 
-         #generated-menu-output p:last-child {
+         .menu-item-line:last-child {
              margin-bottom: 0;
              padding-bottom: 0;
              border-bottom: none;
          }
+
+         .menu-item-info {
+             flex-grow: 1; /* Allow info text to take up space */
+             margin-right: 10px; /* Space between info and recipe name */
+         }
+
+         .menu-item-recipe-name {
+              font-weight: bold; /* Make the recipe name stand out */
+              margin-right: 10px; /* Space before lock checkbox */
+         }
+
+         .menu-item-lock {
+              flex-shrink: 0; /* Prevent lock checkbox from shrinking */
+         }
+
+         .menu-item-lock label {
+             font-weight: normal;
+             margin-right: 0; /* No margin on the last label */
+             display: inline-block; /* Keep label and checkbox inline */
+         }
+
 
         .button-container {
             display: flex;
             justify-content: space-around;
             gap: 15px;
             flex-wrap: wrap;
-            margin-top: 30px; /* Space above buttons */
+            margin-top: 30px;
         }
 
-        .button-container a {
+        .button-container a,
+        .button-container button { /* Apply button styles to button element too */
             flex-grow: 1;
             padding: 12px 20px;
             font-size: 1rem;
             color: #fff;
-            background-color: #007bff;
+            background-color: #007bff; /* Blue */
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -85,7 +112,8 @@
             text-align: center; /* Center text within buttons */
         }
 
-        .button-container a:hover {
+        .button-container a:hover,
+        .button-container button:hover { /* Hover styles for button element too */
             background-color: #0056b3;
         }
 
@@ -97,6 +125,17 @@
          .button-container a.return-button:hover {
              background-color: #5a6268;
          }
+
+          /* Style for the Randomize button */
+         .button-container button#randomize-button {
+             background-color: #ffc107; /* Yellow/Orange */
+             color: #212529; /* Dark text */
+         }
+
+          .button-container button#randomize-button:hover {
+               background-color: #e0a800; /* Darker yellow/orange */
+          }
+
 
           #loading-message {
                text-align: center;
@@ -112,25 +151,26 @@
     <div class="container">
         <h1>Your Weekly Menu</h1>
 
-         <div id="loading-message">Loading recipes to generate menu...</div> <div id="generated-menu-output">
+         <div id="loading-message">Loading recipes to generate menu...</div>
+        <div id="generated-menu-output">
             </div>
 
         <div class="button-container">
             <a href="index.html">Back to Home</a>
-            <a href="plan.html" class="return-button">Return to Date Selection</a>
+             <button id="randomize-button">Randomize</button> <a href="plan.html" class="return-button">Return to Date Selection</a>
         </div>
     </div>
 
     <script>
          // --- Firebase Configuration ---
          const firebaseConfig = {
-            apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
-            authDomain: "menuplanner-d991d.firebaseapp.com",
-            projectId: "menuplanner-d991d",
-            storageBucket: "menuplanner-d991d.firebasestorage.app",
-            messagingSenderId: "494188917249",
-            appId: "1:494188917249:web:59aa705a5f36e231a60600",
-            measurementId: "G-7MP3X52GQ7"
+  apiKey: "AIzaSyDpFk2DSW8v0whfpFXMLnizY3PQyCYbt3M",
+  authDomain: "menuplanner-d991d.firebaseapp.com",
+  projectId: "menuplanner-d991d",
+  storageBucket: "menuplanner-d991d.firebasestorage.app",
+  messagingSenderId: "494188917249",
+  appId: "1:494188917249:web:59aa705a5f36e231a60600",
+  measurementId: "G-7MP3X52GQ7"
          };
 
          // Initialize Firebase
@@ -143,10 +183,15 @@
          const recipesCollection = db.collection('Recipes');
 
 
-        // --- JavaScript to parse URL parameters, fetch recipes, and display the menu ---
+        // --- Global variable to store all fetched recipes ---
+        let allRecipes = []; // Store recipe documents (with id and data())
+
+
+        // --- JavaScript for menu generation and interactivity ---
 
         const generatedMenuOutput = document.getElementById('generated-menu-output');
         const loadingMessage = document.getElementById('loading-message');
+        const randomizeButton = document.getElementById('randomize-button');
 
 
         // Function to generate and display the menu
@@ -154,12 +199,11 @@
             // Clear previous output
             generatedMenuOutput.innerHTML = '';
             loadingMessage.textContent = 'Loading recipes to generate menu...';
-            loadingMessage.style.display = 'block'; // Show loading message
-
+            loadingMessage.style.display = 'block';
 
             // 1. Parse URL parameters for selected meals
             const urlParams = new URLSearchParams(window.location.search);
-            const selectedMealsByDate = {}; // Object to hold { 'YYYY-MM-DD': ['Breakfast', 'Lunch'], ... }
+            const selectedMealsByDate = {};
 
             for (const [key, value] of urlParams) {
                 if (key.startsWith('meals[')) {
@@ -179,28 +223,34 @@
              const datesWithMeals = Object.keys(selectedMealsByDate);
 
              if (datesWithMeals.length === 0) {
-                 loadingMessage.style.display = 'none'; // Hide loading
+                 loadingMessage.style.display = 'none';
                  generatedMenuOutput.innerHTML = "<p>No meals were selected for the menu.</p>";
+                 // Disable randomize button if no menu is generated
+                 randomizeButton.disabled = true;
                  return;
              }
 
 
-            // 2. Fetch all recipes from Firestore
-            let allRecipes = [];
-            try {
-                const snapshot = await recipesCollection.get();
-                allRecipes = snapshot.docs; // Array of document snapshots
+            // 2. Fetch all recipes from Firestore (only if not already fetched)
+             if (allRecipes.length === 0) {
+                 try {
+                     const snapshot = await recipesCollection.get();
+                     allRecipes = snapshot.docs; // Array of document snapshots
 
-                loadingMessage.style.display = 'none'; // Hide loading message
+                     loadingMessage.style.display = 'none';
 
-            } catch (error) {
-                console.error("Error fetching recipes for menu generation:", error);
-                loadingMessage.textContent = 'Error loading recipes for menu generation.';
-                return; // Stop generation if recipes fail to load
-            }
+                 } catch (error) {
+                     console.error("Error fetching recipes for menu generation:", error);
+                     loadingMessage.textContent = 'Error loading recipes for menu generation.';
+                     randomizeButton.disabled = true; // Disable randomize button on error
+                     return; // Stop generation if recipes fail to load
+                 }
+             } else {
+                 loadingMessage.style.display = 'none'; // Hide loading if recipes were already in allRecipes
+             }
 
 
-            // 3. Generate the menu with random recipe selection
+            // 3. Generate the initial menu with random recipe selection
             const generatedMenuData = [];
 
             // Sort dates chronologically
@@ -214,22 +264,21 @@
                  selectedMealsByDate[dateString].sort((a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
 
                  selectedMealsByDate[dateString].forEach(mealType => {
-                     // Find recipes that match this meal type
+                     // Find recipes that match this meal type from allRecipes
                      const recipesForMealType = allRecipes.filter(recipeDoc => {
                           const recipeData = recipeDoc.data();
-                          // Check if the recipe's Meal field (array or string) includes the mealType
                           if (recipeData.Meal) {
                               if (Array.isArray(recipeData.Meal)) {
                                    return recipeData.Meal.includes(mealType);
                               } else if (typeof recipeData.Meal === 'string') {
                                    return recipeData.Meal === mealType;
-                              }
-                          }
-                          return false; // No valid Meal field or doesn't match
+                               }
+                           }
+                           return false;
                      });
 
                      let selectedRecipeName = 'No recipe found for this meal type';
-                     let selectedRecipeId = null; // Optional: store recipe ID
+                     let selectedRecipeId = null;
 
                      if (recipesForMealType.length > 0) {
                           // Randomly select one recipe
@@ -244,27 +293,135 @@
                          date: dateString,
                          meal: mealType,
                          recipeName: selectedRecipeName,
-                         recipeId: selectedRecipeId
+                         recipeId: selectedRecipeId,
+                         isLocked: false // Add a flag to track if the line is locked
                      });
                  });
             });
 
 
-            // 4. Display the generated menu
-            generatedMenuData.forEach(item => {
-                 // Format the date from YYYY-MM-DD to M/D
-                 const dateObj = new Date(item.date);
-                 const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+            // 4. Display the generated menu with lock checkboxes
+            displayGeneratedMenuHtml(generatedMenuData);
 
-                 const p = document.createElement('p');
-                 // Display Date - Meal - Recipe Name
-                 p.textContent = `${formattedDate} - ${item.meal} - ${item.recipeName}`;
-                 generatedMenuOutput.appendChild(p);
-            });
-
-             // Clear the initial loading message once generation is complete
-             loadingMessage.style.display = 'none';
         }
+
+        // Function to render the generated menu data as HTML
+         function displayGeneratedMenuHtml(menuData) {
+             generatedMenuOutput.innerHTML = ''; // Clear previous output
+
+             if (menuData.length === 0) {
+                  generatedMenuOutput.innerHTML = "<p>No menu items to display.</p>";
+                  return;
+             }
+
+             const mealOrder = ["Breakfast", "Lunch", "Dinner"]; // Used for consistent sorting of items within a day if needed later
+
+             menuData.forEach(item => {
+                  // Format the date from YYYY-MM-DD to M/D
+                  const dateObj = new Date(item.date);
+                  const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+
+                  // Create a div for each menu line
+                  const menuLineDiv = document.createElement('div');
+                  menuLineDiv.classList.add('menu-item-line');
+                  // Store data attributes on the line for easy access during randomization
+                  menuLineDiv.dataset.date = item.date;
+                  menuLineDiv.dataset.meal = item.meal;
+                  // Store the recipe ID on the element
+                  menuLineDiv.dataset.recipeId = item.recipeId;
+
+
+                  menuLineDiv.innerHTML = `
+                      <span class="menu-item-info">${formattedDate} - ${item.meal} - </span>
+                      <span class="menu-item-recipe-name">${item.recipeName}</span>
+                      <span class="menu-item-lock">
+                          <label>
+                              <input type="checkbox" class="lock-checkbox" ${item.isLocked ? 'checked' : ''}> Lock
+                          </label>
+                      </span>
+                  `;
+
+                  generatedMenuOutput.appendChild(menuLineDiv);
+             });
+         }
+
+
+         // Function to handle the Randomize button click
+         randomizeButton.addEventListener('click', function() {
+             if (allRecipes.length === 0) {
+                 alert("Recipe data not loaded. Cannot randomize.");
+                 return;
+             }
+
+             const menuLines = generatedMenuOutput.querySelectorAll('.menu-item-line');
+             const updatedMenuData = []; // Array to hold the menu state after randomization
+
+             menuLines.forEach(menuLine => {
+                 const lockCheckbox = menuLine.querySelector('.lock-checkbox');
+                 const recipeNameSpan = menuLine.querySelector('.menu-item-recipe-name');
+
+                 const dateString = menuLine.dataset.date;
+                 const mealType = menuLine.dataset.meal;
+                 let currentRecipeId = menuLine.dataset.recipeId;
+                 let currentRecipeName = recipeNameSpan.textContent;
+
+
+                 if (lockCheckbox.checked) {
+                     // If locked, keep the current recipe
+                      updatedMenuData.push({
+                          date: dateString,
+                          meal: mealType,
+                          recipeName: currentRecipeName,
+                          recipeId: currentRecipeId,
+                          isLocked: true // Mark as locked
+                      });
+
+                 } else {
+                     // If not locked, re-randomize
+                     const recipesForMealType = allRecipes.filter(recipeDoc => {
+                         const recipeData = recipeDoc.data();
+                         if (recipeData.Meal) {
+                              if (Array.isArray(recipeData.Meal)) {
+                                   return recipeData.Meal.includes(mealType);
+                              } else if (typeof recipeData.Meal === 'string') {
+                                   return recipeData.Meal === mealType;
+                               }
+                           }
+                           return false;
+                     });
+
+                     let newRecipeName = 'No recipe found for this meal type';
+                     let newRecipeId = null;
+
+                     if (recipesForMealType.length > 0) {
+                          const randomIndex = Math.floor(Math.random() * recipesForMealType.length);
+                          const randomRecipe = recipesForMealType[randomIndex];
+                          newRecipeName = randomRecipe.data().Name || 'Unnamed Recipe';
+                          newRecipeId = randomRecipe.id;
+                     }
+
+                     // Update the displayed recipe name for this line
+                      recipeNameSpan.textContent = newRecipeName;
+                      // Update the data attributes on the line
+                      menuLine.dataset.recipeId = newRecipeId;
+
+                     // Add to the updated menu data (unlocked state)
+                      updatedMenuData.push({
+                          date: dateString,
+                          meal: mealType,
+                          recipeName: newRecipeName,
+                          recipeId: newRecipeId,
+                          isLocked: false // Mark as unlocked
+                      });
+                 }
+             });
+
+             // Optional: You could save the updatedMenuData back to Session Storage here if needed
+             // sessionStorage.setItem('generatedMenu', JSON.stringify(updatedMenuData));
+
+             console.log("Menu re-randomized.");
+         });
+
 
         // --- Initial Setup ---
 
