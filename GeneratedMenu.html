@@ -186,7 +186,25 @@
   measurementId: "G-7MP3X52GQ7"
          };
 
-          // Initialize Firebase
+         Okay, let's address the issues with the "Randomize" button, the tag filtering, preserving the lock state, and adding the day of the week.
+
+Here's the updated GeneratedMenu.html JavaScript:
+
+JavaScript
+
+    <script>
+         // --- Firebase Configuration ---
+         const firebaseConfig = {
+             apiKey: "YOUR_API_KEY", // Replace with your actual key
+             authDomain: "YOUR_AUTH_DOMAIN", // Replace
+             projectId: "YOUR_PROJECT_ID", // Replace
+             storageBucket: "YOUR_STORAGE_BUCKET", // Replace
+             messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace
+             appId: "YOUR_APP_ID", // Replace
+             measurementId: "YOUR_MEASUREMENT_ID" // Replace or remove if not used
+         };
+
+         // Initialize Firebase
          const app = firebase.initializeApp(firebaseConfig);
 
          // Get a reference to the Firestore database
@@ -199,6 +217,7 @@
         // --- Global variables ---
         let allRecipes = [];
         let allTags = []; // To store all unique tags
+        let currentMenuData = []; // Store the current state of the generated menu
 
 
         // --- JavaScript for menu generation and interactivity ---
@@ -210,7 +229,6 @@
 
         // Function to fetch all unique tags from Firestore
         async function fetchAllTags() {
-            console.log("fetchAllTags() started");
             const uniqueTags = new Set();
             try {
                 const snapshot = await recipesCollection.get();
@@ -225,23 +243,19 @@
                     }
                 });
                 allTags = Array.from(uniqueTags).sort();
-                console.log("fetchAllTags() completed", allTags);
             } catch (error) {
                 console.error("Error fetching tags:", error);
                 loadingMessage.textContent = 'Error loading tags.';
-            } finally {
-                console.log("fetchAllTags() finally block");
             }
         }
 
 
         // Function to generate and display the menu
         async function generateAndDisplayMenu() {
-            console.log("generateAndDisplayMenu() started");
             generatedMenuOutput.innerHTML = '';
             loadingMessage.textContent = 'Loading data...';
             loadingMessage.style.display = 'block';
-            console.log("Loading message displayed");
+            currentMenuData = []; // Reset current menu data
 
             const urlParams = new URLSearchParams(window.location.search);
             const selectedMealsByDate = {};
@@ -262,61 +276,44 @@
             }
 
              const datesWithMeals = Object.keys(selectedMealsByDate);
-             console.log("Dates with meals:", datesWithMeals);
 
              if (datesWithMeals.length === 0) {
                  loadingMessage.style.display = 'none';
                  generatedMenuOutput.innerHTML = "<p>No meals were selected for the menu.</p>";
                  randomizeButton.disabled = true;
-                 console.log("No meals selected, loading message hidden");
                  return;
              }
 
              if (allRecipes.length === 0) {
-                 console.log("Fetching recipes...");
                  try {
                      const snapshot = await recipesCollection.get();
                      allRecipes = snapshot.docs;
-                     console.log("Recipes fetched", allRecipes);
                      await fetchAllTags(); // Fetch tags after recipes
                      loadingMessage.style.display = 'none';
-                     console.log("Loading message hidden after fetching");
                  } catch (error) {
                      console.error("Error fetching recipes:", error);
                      loadingMessage.textContent = 'Error loading recipes.';
                      randomizeButton.disabled = true;
-                     console.log("Error fetching recipes, loading message still visible");
                      return;
                  }
              } else if (allTags.length === 0) {
-                 console.log("Fetching tags (recipes already loaded)...");
                  await fetchAllTags(); // Fetch tags if recipes were already loaded
                  loadingMessage.style.display = 'none';
-                 console.log("Loading message hidden after fetching tags");
              } else {
                  loadingMessage.style.display = 'none';
-                 console.log("Recipes and tags already loaded, loading message hidden");
              }
 
 
-            const generatedMenuData = [];
             datesWithMeals.sort((a, b) => new Date(a) - new Date(b));
             const mealOrder = ["Breakfast", "Lunch", "Dinner"];
 
-            datesWithMeals.forEach(dateString => {
+            for (const dateString of datesWithMeals) {
                  selectedMealsByDate[dateString].sort((a, b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
 
-                 selectedMealsByDate[dateString].forEach(mealType => {
+                 for (const mealType of selectedMealsByDate[dateString]) {
                      const recipesForMealType = allRecipes.filter(recipeDoc => {
                          const recipeData = recipeDoc.data();
-                         if (recipeData.Meal) {
-                             if (Array.isArray(recipeData.Meal)) {
-                                 return recipeData.Meal.includes(mealType);
-                             } else if (typeof recipeData.Meal === 'string') {
-                                 return recipeData.Meal === mealType;
-                             }
-                         }
-                         return false;
+                         return recipeData.Meal && (Array.isArray(recipeData.Meal) ? recipeData.Meal.includes(mealType) : recipeData.Meal === mealType);
                      });
 
                      let selectedRecipeName = 'No recipe found';
@@ -329,7 +326,7 @@
                          selectedRecipeId = randomRecipe.id;
                      }
 
-                     generatedMenuData.push({
+                     currentMenuData.push({
                          date: dateString,
                          meal: mealType,
                          recipeName: selectedRecipeName,
@@ -337,18 +334,15 @@
                          isLocked: false,
                          selectedTags: [] // Initialize with no tags selected
                      });
-                 });
-            });
+                 }
+            }
 
-            console.log("Generated menu data:", generatedMenuData);
-            displayGeneratedMenuHtml(generatedMenuData);
-            console.log("displayGeneratedMenuHtml() called");
+            displayGeneratedMenuHtml(currentMenuData);
         }
 
         // Function to render the generated menu data as HTML
          function displayGeneratedMenuHtml(menuData) {
              generatedMenuOutput.innerHTML = '';
-             console.log("displayGeneratedMenuHtml() started with data:", menuData);
 
              if (menuData.length === 0) {
                   generatedMenuOutput.innerHTML = "<p>No menu items to display.</p>";
@@ -359,17 +353,18 @@
                   const [year, month, day] = item.date.split('-').map(Number);
                   const dateObj = new Date(year, month - 1, day);
                   const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+                  const dayOfWeek = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(dateObj);
 
                   const menuLineDiv = document.createElement('div');
                   menuLineDiv.classList.add('menu-item-line');
                   menuLineDiv.dataset.index = index; // Store index for easy updates
 
                   menuLineDiv.innerHTML = `
-                      <span class="menu-item-info">${formattedDate} - ${item.meal} - </span>
+                      <span class="menu-item-info">${dayOfWeek}, ${formattedDate} - ${item.meal} - </span>
                       <span class="menu-item-recipe-name">${item.recipeName}</span>
                       <div class="menu-item-tags">
                           <select class="tag-select" multiple="multiple" data-index="${index}">
-                              ${allTags.map(tag => `<option value="${tag}">${tag}</option>`).join('')}
+                              ${allTags.map(tag => `<option value="${tag}" ${item.selectedTags.includes(tag) ? 'selected' : ''}>${tag}</option>`).join('')}
                           </select>
                       </div>
                       <span class="menu-item-lock">
@@ -385,43 +380,27 @@
              // Initialize Select2 after the elements are added to the DOM
              $(document).ready(function() {
                  $('.tag-select').select2();
-                 console.log("Select2 initialized");
+                 $('.lock-checkbox').on('change', function() {
+                     const index = parseInt($(this).data('index'));
+                     if (index >= 0 && index < currentMenuData.length) {
+                         currentMenuData[index].isLocked = this.checked;
+                     }
+                 });
+                 $('.tag-select').on('change', function() {
+                     const index = parseInt($(this).data('index'));
+                     if (index >= 0 && index < currentMenuData.length) {
+                         currentMenuData[index].selectedTags = $(this).val() || [];
+                     }
+                 });
              });
-             console.log("displayGeneratedMenuHtml() completed");
          }
 
 
          randomizeButton.addEventListener('click', function() {
-             console.log("randomizeButton clicked");
              if (allRecipes.length === 0) {
                  alert("Recipe data not loaded. Cannot randomize.");
                  return;
              }
-
-             const menuLines = generatedMenuOutput.querySelectorAll('.menu-item-line');
-             const currentMenuData = []; // To store the current state of the menu
-
-             menuLines.forEach(menuLine => {
-                 const index = parseInt(menuLine.dataset.index);
-                 const lockCheckbox = menuLine.querySelector('.lock-checkbox');
-                 const recipeNameSpan = menuLine.querySelector('.menu-item-recipe-name');
-                 const tagSelect = $(menuLine.querySelector('.tag-select')).val(); // Get selected tags
-
-                 const dateString = menuLine.dataset.date;
-                 const mealType = menuLine.dataset.meal;
-                 const currentRecipeId = menuLine.dataset.recipeId;
-                 const currentRecipeName = recipeNameSpan.textContent;
-                 const isLocked = lockCheckbox.checked;
-
-                 currentMenuData.push({
-                     date: dateString,
-                     meal: mealType,
-                     recipeName: currentRecipeName,
-                     recipeId: currentRecipeId,
-                     isLocked: isLocked,
-                     selectedTags: tagSelect || []
-                 });
-             });
 
              const updatedMenuData = currentMenuData.map(item => {
                  if (!item.isLocked) {
@@ -443,15 +422,14 @@
                  return item; // Keep locked items as they are
              });
 
-             displayGeneratedMenuHtml(updatedMenuData);
-             console.log("Menu re-randomized.");
+             currentMenuData = updatedMenuData; // Update the global menu data
+             displayGeneratedMenuHtml(currentMenuData);
          });
 
 
         // --- Initial Setup ---
 
         // Run the function to generate and display the menu when the page loads
-        console.log("Initial call to generateAndDisplayMenu()");
         generateAndDisplayMenu();
 
 
