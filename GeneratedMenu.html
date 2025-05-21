@@ -186,7 +186,7 @@
   measurementId: "G-7MP3X52GQ7"
          };
 
-         // Initialize Firebase
+          // Initialize Firebase
          const app = firebase.initializeApp(firebaseConfig);
 
          // Get a reference to the Firestore database
@@ -210,6 +210,7 @@
 
         // Function to fetch all unique tags from Firestore
         async function fetchAllTags() {
+            console.log("fetchAllTags() started");
             const uniqueTags = new Set();
             try {
                 const snapshot = await recipesCollection.get();
@@ -224,18 +225,23 @@
                     }
                 });
                 allTags = Array.from(uniqueTags).sort();
+                console.log("fetchAllTags() completed", allTags);
             } catch (error) {
                 console.error("Error fetching tags:", error);
                 loadingMessage.textContent = 'Error loading tags.';
+            } finally {
+                console.log("fetchAllTags() finally block");
             }
         }
 
 
         // Function to generate and display the menu
         async function generateAndDisplayMenu() {
+            console.log("generateAndDisplayMenu() started");
             generatedMenuOutput.innerHTML = '';
             loadingMessage.textContent = 'Loading data...';
             loadingMessage.style.display = 'block';
+            console.log("Loading message displayed");
 
             const urlParams = new URLSearchParams(window.location.search);
             const selectedMealsByDate = {};
@@ -256,31 +262,40 @@
             }
 
              const datesWithMeals = Object.keys(selectedMealsByDate);
+             console.log("Dates with meals:", datesWithMeals);
 
              if (datesWithMeals.length === 0) {
                  loadingMessage.style.display = 'none';
                  generatedMenuOutput.innerHTML = "<p>No meals were selected for the menu.</p>";
                  randomizeButton.disabled = true;
+                 console.log("No meals selected, loading message hidden");
                  return;
              }
 
              if (allRecipes.length === 0) {
+                 console.log("Fetching recipes...");
                  try {
                      const snapshot = await recipesCollection.get();
                      allRecipes = snapshot.docs;
+                     console.log("Recipes fetched", allRecipes);
                      await fetchAllTags(); // Fetch tags after recipes
                      loadingMessage.style.display = 'none';
+                     console.log("Loading message hidden after fetching");
                  } catch (error) {
                      console.error("Error fetching recipes:", error);
                      loadingMessage.textContent = 'Error loading recipes.';
                      randomizeButton.disabled = true;
+                     console.log("Error fetching recipes, loading message still visible");
                      return;
                  }
              } else if (allTags.length === 0) {
+                 console.log("Fetching tags (recipes already loaded)...");
                  await fetchAllTags(); // Fetch tags if recipes were already loaded
                  loadingMessage.style.display = 'none';
+                 console.log("Loading message hidden after fetching tags");
              } else {
                  loadingMessage.style.display = 'none';
+                 console.log("Recipes and tags already loaded, loading message hidden");
              }
 
 
@@ -325,12 +340,15 @@
                  });
             });
 
+            console.log("Generated menu data:", generatedMenuData);
             displayGeneratedMenuHtml(generatedMenuData);
+            console.log("displayGeneratedMenuHtml() called");
         }
 
         // Function to render the generated menu data as HTML
          function displayGeneratedMenuHtml(menuData) {
              generatedMenuOutput.innerHTML = '';
+             console.log("displayGeneratedMenuHtml() started with data:", menuData);
 
              if (menuData.length === 0) {
                   generatedMenuOutput.innerHTML = "<p>No menu items to display.</p>";
@@ -340,15 +358,15 @@
              menuData.forEach((item, index) => {
                   const [year, month, day] = item.date.split('-').map(Number);
                   const dateObj = new Date(year, month - 1, day);
-                  const formattedDate = `<span class="math-inline">\{dateObj\.getMonth\(\) \+ 1\}/</span>{dateObj.getDate()}`;
+                  const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
 
                   const menuLineDiv = document.createElement('div');
                   menuLineDiv.classList.add('menu-item-line');
                   menuLineDiv.dataset.index = index; // Store index for easy updates
 
                   menuLineDiv.innerHTML = `
-                      <span class="menu-item-info">${formattedDate} - <span class="math-inline">\{item\.meal\} \- </span\>
-<span class\="menu\-item\-recipe\-name"\></span>{item.recipeName}</span>
+                      <span class="menu-item-info">${formattedDate} - ${item.meal} - </span>
+                      <span class="menu-item-recipe-name">${item.recipeName}</span>
                       <div class="menu-item-tags">
                           <select class="tag-select" multiple="multiple" data-index="${index}">
                               ${allTags.map(tag => `<option value="${tag}">${tag}</option>`).join('')}
@@ -367,11 +385,14 @@
              // Initialize Select2 after the elements are added to the DOM
              $(document).ready(function() {
                  $('.tag-select').select2();
+                 console.log("Select2 initialized");
              });
+             console.log("displayGeneratedMenuHtml() completed");
          }
 
 
          randomizeButton.addEventListener('click', function() {
+             console.log("randomizeButton clicked");
              if (allRecipes.length === 0) {
                  alert("Recipe data not loaded. Cannot randomize.");
                  return;
@@ -423,3 +444,15 @@
              });
 
              displayGeneratedMenuHtml(updatedMenuData);
+             console.log("Menu re-randomized.");
+         });
+
+
+        // --- Initial Setup ---
+
+        // Run the function to generate and display the menu when the page loads
+        console.log("Initial call to generateAndDisplayMenu()");
+        generateAndDisplayMenu();
+
+
+    </script>
